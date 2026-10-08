@@ -77,6 +77,17 @@ STAGE_NAMES = {1: "Understanding the request", 2: "Finding entry points", 3: "Fo
                4: "Judging what must change", 5: "Checking data, systems, rules and tests", 6: "Writing the summary"}
 
 
+def _job(key: str) -> dict | None:
+    """Live job status: in-memory (API-started) or from the database (started by any process, e.g. scripts)."""
+    mem = STATE.jobs.get(key)
+    if mem and mem["status"] in ("running", "error"):
+        return mem
+    db = STATE.store.get(f"job:{key}")
+    if db and db["status"] == "running" and time.time() - db.get("updated", 0) > 20 * 60:
+        db = db | {"status": "error", "error": "Analysis stopped responding (process ended?)"}
+    return db or mem
+
+
 def _analysis(key: str) -> dict | None:
     pm = STATE.ensure_map()
     a = STATE.store.get(f"analysis:{key}:{pm.sha}")
@@ -124,7 +135,7 @@ def list_crs():
                                  "must_change": sum(1 for i in a["items"] if i["verdict"] == "must_change"),
                                  "externals": len(a["externals"]), "controls": len(a["controls"]),
                                  "open_questions": len(a["understanding"]["open_questions"])} if a else None,
-                    "job": STATE.jobs.get(key)})
+                    "job": _job(key)})
     return out
 
 
@@ -134,7 +145,7 @@ def get_cr(key: str):
     issues = load_issues()
     if key not in issues:
         raise HTTPException(404, f"Unknown change request {key}")
-    return {"key": key, "issue": issues[key], "analysis": _analysis(key), "job": STATE.jobs.get(key)}
+    return {"key": key, "issue": issues[key], "analysis": _analysis(key), "job": _job(key)}
 
 
 @app.post("/api/crs/{key}/analyze")
@@ -143,7 +154,7 @@ def start_analysis(key: str, force: bool = False):
     from .engine.impact import analyze, load_issues
     if key not in load_issues():
         raise HTTPException(404, f"Unknown change request {key}")
-    job = STATE.jobs.get(key)
+    job = _job(key)
     if job and job["status"] == "running":
         return job
     job = STATE.jobs[key] = {"status": "running", "stage": 0, "stage_name": "Starting", "started": time.time(), "error": None}

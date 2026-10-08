@@ -56,6 +56,13 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
     f = issue["fields"]
     text = issue_text(issue)
     t0 = time.time()
+    # share live progress through the database, so the board sees jobs started by ANY process (API or scripts)
+    outer = progress
+
+    def progress(stage, msg):
+        store.put(f"job:{key}", {"status": "running", "stage": stage, "stage_name": msg, "started": t0,
+                                 "updated": time.time(), "elapsed": round(time.time() - t0, 1), "model": model})
+        outer(stage, msg)
     stages: dict[str, dict] = {}
     labels = _label_index(pm)
 
@@ -406,4 +413,6 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
         "assessment": assessment, "cards": cards, "stages": stages,
     }
     store.put(f"analysis:{key}:{pm.sha}", result)
+    store.put(f"job:{key}", {"status": "done", "stage": 6, "stage_name": "Done", "started": t0, "updated": time.time(),
+                             "elapsed": round(time.time() - t0, 1), "model": model})
     return result
