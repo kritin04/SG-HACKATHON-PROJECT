@@ -19,7 +19,7 @@ export default function Board() {
   useEffect(() => { load() }, [load])
   useEffect(() => {
     if (!crs?.some(c => c.job?.status === 'running')) return
-    const t = setInterval(load, 3000)
+    const t = setInterval(load, 1000)
     return () => clearInterval(t)
   }, [crs, load])
 
@@ -31,7 +31,7 @@ export default function Board() {
       <div className="mx-auto max-w-[1400px] px-8 py-6">
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-brand-600">Jira · Bank of Anthos</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-brand-600">Jira · Payments Platform</div>
             <h1 className="mt-1 text-2xl font-semibold text-slate-900">Change requests</h1>
             <p className="mt-1 text-sm text-slate-500">Open a change request to see what it will affect, how, and who needs to be involved, before any code is written.</p>
           </div>

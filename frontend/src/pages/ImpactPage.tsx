@@ -110,14 +110,14 @@ export default function ImpactPage() {
               <Accordion id="testing" title="Testing" icon={FlaskConical} count={a.tests.gaps.length + a.assessment.test_scenarios.length}>
                 <TestingSection a={a} />
               </Accordion>
-              <Accordion id="compliance" title="Approvals needed (bank rules)" icon={ShieldCheck} count={a.controls.length}>
+              <Accordion id="compliance" title="Approvals needed (company rules)" icon={ShieldCheck} count={a.controls.length}>
                 {a.controls.length ? <ul className="space-y-3">{a.controls.map((c: any) => (
                   <li key={c.id} className="rounded-lg border border-slate-200 p-3">
                     <div className="flex items-center gap-2"><span className="font-mono text-xs font-semibold text-violet-700">{c.id}</span><b className="text-slate-900">{c.name}</b></div>
                     <ul className="mt-1 text-xs text-slate-600">{c.reasons.map((r: string) => <li key={r}>• {r}</li>)}</ul>
                     <div className="mt-2 flex flex-wrap gap-1.5">{c.requires.map((r: string) => <Badge key={r} tone="violet">{r}</Badge>)}</div>
                   </li>))}</ul> : <Empty>No approval rules are triggered.</Empty>}
-                <p className="mt-3 text-xs text-slate-400">Rules come from the bank's change policy (synthetic examples here). The tool says when a rule applies; people decide.</p>
+                <p className="mt-3 text-xs text-slate-400">Rules come from the organisation's change policy (synthetic examples here). The tool says when a rule applies; people decide.</p>
               </Accordion>
               <Accordion id="people" title="People to involve" icon={Users} count={a.people.length}>
                 <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">{a.people.map((p: any) => (

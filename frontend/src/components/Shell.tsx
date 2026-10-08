@@ -69,7 +69,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <div className="text-sm font-medium text-slate-800">{CURRENT_USER.name}</div>
               <div className="text-[11px] text-slate-500">{CURRENT_USER.role}</div>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">PN</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">{CURRENT_USER.name.split(" ").map(w => w[0]).join("")}</div>
           </div>
         </header>
         <main className="min-h-0 flex-1 overflow-hidden">{children}</main>

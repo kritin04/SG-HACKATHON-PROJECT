@@ -1,6 +1,6 @@
 # The project being analysed. Real open-source code, pinned so results are reproducible.
-name: Bank of Anthos
-description: Google's open-source sample bank (login, balances, payments, deposits, history).
+name: Payments Platform
+description: Open-source sample payments application (Google's Bank of Anthos) - login, balances, payments, deposits, history.
 repo_url: https://github.com/GoogleCloudPlatform/bank-of-anthos.git
 pinned_sha: db35fea9fd090150e2398106aadb475576f80d94
 pinned_label: release/v0.6.11

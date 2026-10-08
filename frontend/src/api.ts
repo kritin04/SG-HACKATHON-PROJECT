@@ -11,7 +11,7 @@ async function req<T = Json>(path: string, init?: RequestInit): Promise<T> {
   return r.json()
 }
 
-export const CURRENT_USER = { login: 'priya.nair', name: 'Priya Nair', role: 'Lead Engineer' }
+export const CURRENT_USER = { login: 'kritin', name: 'Kritin Goyal', role: 'Lead Engineer' }
 
 export const api = {
   health: () => req('/api/health'),
