@@ -218,6 +218,7 @@ def create_cr(body: NewCR):
                                         "issuetype": {"name": "Change Request"}, "summary": body.summary,
                                         "description": text_to_adf(body.description, body.acceptance_criteria, "Acceptance criteria"),
                                         "priority": {"name": body.priority}, "labels": ["created-in-copilot"]})
+        jira.add_to_active_sprint([r["key"]])
         jira.sync()
         STATE.store.audit("Priya Nair", "cr_created_in_jira", r["key"], {"summary": body.summary})
         return {"key": r["key"]}

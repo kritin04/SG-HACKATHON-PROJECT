@@ -64,6 +64,18 @@ def cached_issues() -> list[dict] | None:
     return json.loads(CACHE.read_text(encoding="utf-8"))["issues"]
 
 
+def add_to_active_sprint(keys: list[str], project: str = "BOA") -> None:
+    """Scrum boards only show the active sprint; put new issues there (no-op for Kanban / no sprint)."""
+    try:
+        c = client()
+        boards = c._req("GET", "/rest/agile/1.0/board", params={"projectKeyOrId": project})["values"]
+        sprints = c._req("GET", f"/rest/agile/1.0/board/{boards[0]['id']}/sprint", params={"state": "active"})["values"]
+        if sprints:
+            c._req("POST", f"/rest/agile/1.0/sprint/{sprints[0]['id']}/issue", json={"issues": keys})
+    except Exception:
+        pass
+
+
 def publish(key: str, a: dict, app_url: str = "http://localhost:5173") -> dict:
     """Post a short impact summary as a comment on the Jira issue."""
     must = [i["label"] for i in a["items"] if i["verdict"] == "must_change"]
