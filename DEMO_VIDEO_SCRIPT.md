@@ -1,89 +1,131 @@
-# Demo Video Script: Change Impact Copilot (~6 min)
+# Change Impact Copilot: Demo Video Script (≈ 6½ min)
 
-**Hero ticket:** BOA-9 "Collect the customer's phone number at sign-up" (starts in *To analyse*)
-**Supporting tickets:** BOA-8 "Block payments to your own account", BOA-12 "Make the balance show faster"
-Format: 🎬 on screen · 🖱️ do · 🎙️ say (word for word)
+How to read this:
+- **SCREEN**: what's visible.
+- **DO**: the exact clicks (button names match the app).
+- **SAY**: spoken narration. Read it like you're explaining it to a colleague, not reading a slide; small pauses are fine.
 
----
-
-## Before every take (2 minutes)
-1. Ollama running (tray icon) → start the backend and frontend:
-   ```powershell
-   cd backend;  .venv\Scripts\python -m uvicorn app.main:app --port 8000
-   cd frontend; npm run dev
-   ```
-2. Reset the demo state (puts BOA-9 back in *To analyse*, clears rehearsal edits, removes copilot comments from Jira):
-   ```powershell
-   backend\.venv\Scripts\python scripts\reset_demo.py
-   ```
-3. Browser, one window, F11 full screen, zoom 100–110%:
-   - **Tab 1:** Jira → Payments Platform → **Board** (refresh)
-   - **Tab 2:** http://localhost:5173/board (refresh)
-4. Do not disturb on; Teams and Outlook closed; recorder at 1080p with mic on.
+Before every take: `backend\.venv\Scripts\python scripts\reset_demo.py`, then refresh both tabs.
+- **Tab 1:** Jira, **Payments Platform** board
+- **Tab 2:** http://localhost:5173/board
 
 ---
 
-## Scene 1: Title (0:00–0:10)
-🎬 Title card: **"Change Impact Copilot: know what a change will affect, before writing a line of code."**
+## 1. Opening (0:00 – 0:30)
+**SCREEN:** Jira, the Payments Platform board, with nine tickets in To Do.
+**DO:** Nothing yet. Let the board sit for a second, then scroll slowly.
+**SAY:**
+> "Here's a normal week for a delivery team: a board full of change requests.
+> Before anyone starts coding, someone has to figure out what each change is going to touch. Which services? Which data? Which other teams need to know? Who has to sign it off?
+> Today, that means pulling a lead engineer, a tester and an analyst into a room and reading through code. It's slow, and things still slip through.
+> So we built something to do that first pass for us."
 
-## Scene 2: The problem (0:10–0:40)
-🎬 Jira board. 🖱️ Slowly scroll the To Do column.
-🎙️ *"Every software change starts as a ticket like these. Before anyone writes code, someone has to answer a hard question: what will this change affect? Which systems, which customer data, which other teams, which approvals? Today that takes developers, leads, testers and analysts hours of meetings and code reading, and things still get missed. Those misses become incidents, rework and delays."*
+## 2. The ticket (0:30 – 0:55)
+**SCREEN:** Jira ticket BOA-9.
+**DO:** Click **"Collect the customer's phone number at sign-up"**. Point at the description, then the **Acceptance criteria**.
+**SAY:**
+> "Let's take this one. It sounds small: we want a mobile number from every new customer at sign-up, so we can contact them about suspicious activity.
+> Three acceptance criteria: the field is required, it's saved with the customer profile, and existing customers aren't forced to add one.
+> The question is: what does this actually affect?"
 
-## Scene 3: The ticket (0:40–1:00)
-🎬 Jira → open **BOA-9**. 🖱️ Point at the description, then the acceptance criteria.
-🎙️ *"Here's a simple-sounding request: collect the customer's phone number when they sign up. It's required, it's stored with their profile, and existing customers aren't forced to add one. Let's see what it really affects."*
+## 3. Into the Copilot (0:55 – 1:25)
+**SCREEN:** Copilot, Change requests board.
+**DO:** Switch to tab 2. Point at the **Connected to Jira** bar, click **Sync from Jira**, then point at BOA-9 sitting in **To analyse**.
+**SAY:**
+> "This is the Change Impact Copilot. It's connected to that same Jira project. When I sync, it pulls the change requests straight in through Jira's API.
+> Most of these have already been analysed. Our phone-number ticket is new, so it's waiting here.
+> One thing worth saying up front: everything runs on this laptop, including the AI. Nothing goes out to the cloud."
 
-## Scene 4: Tickets flow into the Copilot (1:00–1:25)
-🎬 Copilot board (tab 2). 🖱️ Point at **Connected to Jira**, click **Sync from Jira**, point at "Synced 9 issue(s)".
-🎙️ *"This is the Change Impact Copilot. It connects to Jira through Jira's official API and pulls in the change requests. Everything you're about to see runs on this laptop, including the AI. No code or data is sent to the cloud."*
+## 4. Analyse it (1:25 – 2:00)
+**SCREEN:** BOA-9 card.
+**DO:** Click **Analyse impact**. The card moves to **Analysing**, steps tick through, and it lands in **Analysed**. Click **Open analysis →**.
+**SAY** *(while it runs)*:
+> "When I hit analyse, a few things happen in order.
+> The AI reads the ticket and works out what's really being asked. Then the Copilot finds where that lands in the code and follows a map of how the whole system is wired together. The AI looks at every part it reaches and decides: must this change, is it likely affected, or does it just need re-testing?
+> Then rules kick in for the things you can't leave to guesswork: personal data, systems outside our code, approvals and tests. And finally the AI writes it up in plain English.
+> We ran the AI part earlier so we don't have to wait on camera; on a laptop that takes a few minutes."
 
-## Scene 5: Run the analysis (1:25–2:00)
-🎬 BOA-9 card in **To analyse**. 🖱️ Click **✨ Analyse impact**. The card moves to **Analysing** and shows the steps (about 5 seconds; the AI's answers were prepared earlier, while a full fresh run on a laptop CPU takes several minutes).
-🎙️ *"Each ticket goes through six steps. First, a local AI reads the request and works out what it really means. Then the Copilot finds where the change starts in the code, follows a verified map of how the whole system connects, and the AI judges every part it reaches: must change, likely affected, or just needs re-testing. Rules then check sensitive data, outside systems, approvals and tests, and the AI writes a plain-English summary."*
-🖱️ When the card moves to **Analysed**, click **Open analysis →**.
+## 5. The answer at a glance (2:00 – 2:50)
+**SCREEN:** BOA-9 analysis page, top half.
+**DO:** Point at **High risk** and **Size M**. Read the first line of the summary. Then move across the six cards: **Business, Technical, Data, Outside systems, Testing, Approvals**.
+**SAY:**
+> "And here's the answer. High risk, medium size.
+> If you're a manager, these six cards are really all you need.
+> Technical: three parts must change, two more are likely affected.
+> Data: this is the customer table, which already holds personal and sensitive data, and we're adding to it. That's why it's red.
+> Outside systems: two systems we don't own, our CRM and regulatory reporting, both read this customer data.
+> Testing: there are ten existing tests to re-run, but two of the parts we're changing have no tests at all today.
+> And approvals: a privacy review, and a sign-off from the regulatory reporting team.
+> That's the conversation you'd normally have in a meeting, done in a few seconds."
 
-## Scene 6: The answer at a glance (2:00–2:50)
-🎬 BOA-9 Impact page. 🖱️ Point at **High risk · Size M**, read the summary, then point at the six cards.
-🎙️ *"In ten seconds, a manager has the answer. High risk, medium size. Three parts of the system must change, and two more are likely affected. The change touches personal data, so a privacy review is required. Two systems outside our code, the customer relationship system and regulatory reporting, read customer data, so those teams must be told and regulatory reporting must sign off. And it lists ten existing tests to re-run, plus two gaps where nothing is tested today."*
+## 6. The questions nobody asked (2:50 – 3:10)
+**SCREEN:** "What the request means", with the yellow box.
+**DO:** Point at **Questions to answer before development**.
+**SAY:**
+> "This bit is one of my favourites. It reads the ticket like a good analyst would and asks what isn't written down.
+> How will the phone number be validated? What happens if it's not provided? Is there a specific format?
+> Normally you find these out halfway through the sprint. Here they come up before anyone starts."
 
-## Scene 7: Questions nobody asked yet (2:50–3:10)
-🎬 Yellow box **Questions to answer before development**.
-🎙️ *"It also spots what the ticket doesn't say. How will the phone number be validated? Is there a required format? What happens if it's missing? These questions usually come up halfway through development. Here, they're raised on day one."*
+## 7. What changes, and how (3:10 – 4:05)
+**SCREEN:** "What changes, and how".
+**DO:** Point at the **Must change** group: **users**, **POST /signup**, **frontend**.
+**SAY:**
+> "For the engineers, here's the detail. The users table needs a new phone number column. The sign-up endpoint has to accept it. The website form has to change."
+**DO:** On **POST /signup**, click **Why?**. Let the drawer show the evidence and code lines, then close it.
+**SAY:**
+> "And every line has a 'Why'. This opens the actual code the decision is based on: the real sign-up function, with line numbers.
+> That's a big deal. The AI isn't allowed to make things up. It can only judge parts that exist on the map, and its answers are checked against the code. If it can't back something up, it's clearly marked as a rule-based result instead."
+**DO:** On **userservice** (in **Likely affected**), change the dropdown to **Must change**. It moves up and shows **Reviewer** and *(AI said: Likely affected)*.
+**SAY:**
+> "And people stay in charge. As the lead, I know the user service will definitely need a change, so I bump it up. The app remembers that I made that call, and what the AI originally said."
 
-## Scene 8: What changes, and how, with proof (3:10–4:00)
-🎬 **What changes, and how**. 🖱️ Point at **POST /signup** (must change), read its sentence, click **Why?** (path + code with line numbers), then close.
-🎙️ *"For engineers, every item says exactly how it's affected. And every claim has proof. 'Why' shows the path through the system and the exact lines of real code it's based on. The AI is only allowed to judge parts found on a verified map, and every answer is checked by code. If something can't be proven, it's marked as a rule-based result, not passed off as AI."*
-🖱️ On **userservice** (likely affected), change the verdict to **Must change** → point at the **Reviewer** badge and "(AI said: Likely affected)".
-🎙️ *"And people stay in control. A lead can change any verdict, remove items or add missing ones, and every change is recorded."*
+## 8. See it on the map (4:05 – 5:00)
+**SCREEN:** Dependency Map, System view, coloured for BOA-9.
+**DO:** Scroll up and click **Show on map**.
+**SAY:**
+> "Here's the same ticket on the map. This is the whole application: the website on the left, the services behind it, the databases, and on the right the systems that sit outside our code.
+> Red is what must change. Orange is likely affected. Yellow needs re-testing. Everything faded is untouched by this change."
+**DO:** Hover **userservice** (tooltip), then hover the dashed line from **Customer Relationship Management (CRM)** to **accounts-db**.
+**SAY:**
+> "Nobody drew this by hand. It's built straight from the source code and configuration. We checked it against a hand-made list of every connection in this codebase, and it got all forty-nine right."
+**DO:** Click the **Data** tab and point at the red **users** table ("8 personal / secret").
+**SAY:**
+> "The data view shows where sensitive data lives, and every service and outside system that reads or writes it."
+**DO:** Click **System**, click **ledgerwriter**, then **What if this changes?**
+**SAY:**
+> "And you can ask the map a question. What if the payments service changes? Everything that depends on it lights up, with the reason for each one."
 
-## Scene 9: The impact on the map (4:00–4:50)
-🎬 🖱️ Click **Show on map**. Hover **userservice**, then hover the line to the customer relationship system.
-🎙️ *"Here's the whole application on one screen: the website, the services behind it, the databases, and the systems outside our code. The map is built automatically from the source code, and we verified it against a hand-checked list of every dependency: forty-nine out of forty-nine correct. Red shows what must change for this ticket; yellow shows what needs re-testing."*
-🖱️ **Data** view → point at the red **users** table.
-🎙️ *"Sensitive data is highlighted, with every system that reads or writes it."*
-🖱️ **System** view → click **ledgerwriter** → **What if this changes?**
-🎙️ *"Anyone can also ask 'what if this changes?' and instantly see the knock-on effects."*
+## 9. Customer journeys (5:00 – 5:20)
+**SCREEN:** Customer journeys view, with "Make a payment" selected.
+**DO:** Click **Customer journeys**. Point at the numbered steps on the map and in the list.
+**SAY:**
+> "For the business side, there's a journey view. This is what really happens when a customer sends money: the website saves the payee, the payment service checks there's enough balance, and then it records the transaction. Step by step, taken from the code."
 
-## Scene 10: Customer journeys (4:50–5:10)
-🎬 🖱️ **Customer journeys** → **Make a payment**.
-🎙️ *"Business users can follow exactly what happens when a customer sends money: save the payee, check there's enough balance, record the payment. Step by step, straight from the code."*
+## 10. It knows big from small (5:20 – 5:50)
+**SCREEN:** Board, then BOA-12.
+**DO:** Go to **Change Requests**. Point at **BOA-8** (Medium risk). Open **BOA-12** and point at its questions.
+**SAY:**
+> "It's also sensible about scale. Blocking payments to your own account is a small rule change, so it's medium risk and only needs the payments sign-off.
+> And when a ticket is vague, like 'make the balance show faster', it doesn't pretend to know. It's rated low and it asks: how much faster? What's the load time today?"
 
-## Scene 11: Proportionate (5:10–5:35)
-🎬 🖱️ Board → point at **BOA-8 (Medium risk)** → open **BOA-12** → questions box.
-🎙️ *"It's also proportionate. Blocking payments to your own account is a small rule change, so it's rated medium, with only the payments sign-off. And when a ticket is vague, like 'make the balance show faster', it's rated low and asks the right questions: how much faster, and what's today's baseline? It pushes back before effort is wasted."*
+## 11. Back to Jira (5:50 – 6:15)
+**SCREEN:** BOA-9 analysis, then Jira.
+**DO:** Open **BOA-9**, click **Post summary to Jira** (it changes to *Posted to Jira*). Switch to tab 1, refresh BOA-9 and scroll to the new comment.
+**SAY:**
+> "Last step: one click, and the summary goes back into the Jira ticket, where the team already works. The risk, what changes, who to involve, the open questions, and a link back to all the evidence."
 
-## Scene 12: Back into Jira (5:35–6:00)
-🎬 🖱️ Open BOA-9 → **Post summary to Jira** → Jira tab → refresh BOA-9 → scroll to the comment.
-🎙️ *"Finally, the summary goes straight back into Jira, where the team already works: risk, what changes, who to involve, open questions, and a link to the full evidence."*
+## 12. Close (6:15 – 6:35)
+**SCREEN:** Copilot board, then the end card.
+**SAY:**
+> "So that's the Change Impact Copilot. It turns hours of impact analysis into minutes, flags the things that usually get missed, backs every claim with real code, and runs privately on a laptop.
+> It works with any multi-service codebase. Thanks for watching."
 
-## Scene 13: Close (6:00–6:20)
-🎬 Board, then end card: **"Change Impact Copilot · Local AI · Proof for every claim · Works with Jira"**
-🎙️ *"Impact analysis in minutes instead of hours. Fewer surprises in delivery. Proof for every claim. And it runs privately on a laptop, ready to work on any multi-service codebase. Thank you."*
+**End card:** *Change Impact Copilot · Local AI · Proof for every claim · Works with Jira*
 
 ---
 
-## Tips
-- Record scene by scene and join the clips in Clipchamp.
-- Pause a second after each click; move the mouse slowly.
-- If something goes wrong, run `scripts\reset_demo.py`, refresh both tabs and redo the scene.
+## Recording notes
+- **Record scene by scene** and join the clips in Clipchamp. If a scene goes wrong, run `reset_demo.py`, refresh and redo just that scene. (Scenes 4, 7 and 11 change the state.)
+- **Let the screen breathe:** after each click, pause one beat before speaking.
+- **The hover moments** (scene 8) work best if you move the mouse slowly onto the box and hold it there.
+- **Length target:** 6 to 7 minutes. If you need it shorter, cut scene 9 (journeys) or the "what if" part of scene 8.
