@@ -32,6 +32,7 @@ def main():
         sys.exit("Set JIRA_BASE_URL (and JIRA_EMAIL / JIRA_API_TOKEN for Jira Cloud) in .env first")
     jira = JiraClient(config.JIRA_BASE_URL, config.JIRA_EMAIL, config.JIRA_API_TOKEN)
     print("Connected as", jira.myself().get("displayName"))
+    created = []
     for issue in json.loads((ROOT / "demo_data" / "jira" / "issues.json").read_text(encoding="utf-8")):
         f = issue["fields"]
         fields = {"project": {"key": args.project}, "issuetype": {"name": args.issuetype}, "summary": f["summary"],
@@ -44,6 +45,16 @@ def main():
             r = jira.create_issue(fields)
             print("  (created without priority:", str(exc)[:80], ")")
         print(f"{issue['key']} -> {r['key']}: {f['summary']}")
+        created.append(r["key"])
+    # Scrum boards only show the active sprint: put the new issues into it (if there is one)
+    try:
+        boards = jira._req("GET", "/rest/agile/1.0/board", params={"projectKeyOrId": args.project})["values"]
+        sprints = jira._req("GET", f"/rest/agile/1.0/board/{boards[0]['id']}/sprint", params={"state": "active"})["values"]
+        if sprints:
+            jira._req("POST", f"/rest/agile/1.0/sprint/{sprints[0]['id']}/issue", json={"issues": created})
+            print(f"Added {len(created)} issue(s) to sprint '{sprints[0]['name']}'")
+    except Exception as exc:  # Kanban boards have no sprints
+        print("No active sprint to add to:", str(exc)[:80])
 
 
 if __name__ == "__main__":
