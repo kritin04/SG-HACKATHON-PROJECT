@@ -1,131 +1,49 @@
-# Change Impact Copilot: Demo Video Script (≈ 6½ min)
+# Change Impact Copilot: Demo Script
 
-How to read this:
-- **SCREEN**: what's visible.
-- **DO**: the exact clicks (button names match the app).
-- **SAY**: spoken narration. Read it like you're explaining it to a colleague, not reading a slide; small pauses are fine.
+**[Jira board]**
+Every change to a system starts as a ticket like these. Before development begins, the team needs to know what the change will affect: which services, which data, which other systems, and who needs to approve it. Today that's done by hand, by reading code and asking around. We built the Change Impact Copilot to do this automatically.
 
-Before every take: `backend\.venv\Scripts\python scripts\reset_demo.py`, then refresh both tabs.
-- **Tab 1:** Jira, **Payments Platform** board
-- **Tab 2:** http://localhost:5173/board
+**[Open BOA-9 in Jira]**
+Here's a change request: collect the customer's phone number at sign-up. The field is required, it's stored with the customer profile, and existing customers don't have to add one.
 
----
+**[Switch to the Copilot board, click Sync from Jira]**
+This is the Copilot. It's connected to our Jira project and pulls in the change requests through the Jira API. The phone number ticket is new, so it's waiting to be analysed. Everything here runs locally on this laptop, including the AI models.
 
-## 1. Opening (0:00 – 0:30)
-**SCREEN:** Jira, the Payments Platform board, with nine tickets in To Do.
-**DO:** Nothing yet. Let the board sit for a second, then scroll slowly.
-**SAY:**
-> "Here's a normal week for a delivery team: a board full of change requests.
-> Before anyone starts coding, someone has to figure out what each change is going to touch. Which services? Which data? Which other teams need to know? Who has to sign it off?
-> Today, that means pulling a lead engineer, a tester and an analyst into a room and reading through code. It's slow, and things still slip through.
-> So we built something to do that first pass for us."
+**[Click Analyse impact on BOA-9]**
+When we analyse a ticket, the AI first reads it to understand what's being asked. The Copilot then finds where that change starts in the code and follows a dependency map of the whole system. The AI decides, for each part it reaches, whether it must change, is likely affected, or only needs re-testing. Rules then check for sensitive data, external systems, required approvals and tests. Finally, the AI writes a summary.
 
-## 2. The ticket (0:30 – 0:55)
-**SCREEN:** Jira ticket BOA-9.
-**DO:** Click **"Collect the customer's phone number at sign-up"**. Point at the description, then the **Acceptance criteria**.
-**SAY:**
-> "Let's take this one. It sounds small: we want a mobile number from every new customer at sign-up, so we can contact them about suspicious activity.
-> Three acceptance criteria: the field is required, it's saved with the customer profile, and existing customers aren't forced to add one.
-> The question is: what does this actually affect?"
+**[Open the analysis]**
+The result: high risk, medium size. Three parts must change and two more are likely affected. The change adds personal data to the customer table. Two external systems read that data, the CRM and regulatory reporting. Ten existing tests need to be re-run, and two of the parts being changed have no tests today. And it needs a privacy review and a sign-off from the regulatory reporting team.
 
-## 3. Into the Copilot (0:55 – 1:25)
-**SCREEN:** Copilot, Change requests board.
-**DO:** Switch to tab 2. Point at the **Connected to Jira** bar, click **Sync from Jira**, then point at BOA-9 sitting in **To analyse**.
-**SAY:**
-> "This is the Change Impact Copilot. It's connected to that same Jira project. When I sync, it pulls the change requests straight in through Jira's API.
-> Most of these have already been analysed. Our phone-number ticket is new, so it's waiting here.
-> One thing worth saying up front: everything runs on this laptop, including the AI. Nothing goes out to the cloud."
+**[Point at the questions]**
+It also lists what the ticket doesn't specify: how the phone number is validated, what happens if it's missing, and what format it should be in. These go back to the analyst before development starts.
 
-## 4. Analyse it (1:25 – 2:00)
-**SCREEN:** BOA-9 card.
-**DO:** Click **Analyse impact**. The card moves to **Analysing**, steps tick through, and it lands in **Analysed**. Click **Open analysis →**.
-**SAY** *(while it runs)*:
-> "When I hit analyse, a few things happen in order.
-> The AI reads the ticket and works out what's really being asked. Then the Copilot finds where that lands in the code and follows a map of how the whole system is wired together. The AI looks at every part it reaches and decides: must this change, is it likely affected, or does it just need re-testing?
-> Then rules kick in for the things you can't leave to guesswork: personal data, systems outside our code, approvals and tests. And finally the AI writes it up in plain English.
-> We ran the AI part earlier so we don't have to wait on camera; on a laptop that takes a few minutes."
+**[Point at Must change: users, POST /signup, frontend]**
+Here's what has to change: a new phone number column in the users table, the sign-up endpoint, and the sign-up form on the website.
 
-## 5. The answer at a glance (2:00 – 2:50)
-**SCREEN:** BOA-9 analysis page, top half.
-**DO:** Point at **High risk** and **Size M**. Read the first line of the summary. Then move across the six cards: **Business, Technical, Data, Outside systems, Testing, Approvals**.
-**SAY:**
-> "And here's the answer. High risk, medium size.
-> If you're a manager, these six cards are really all you need.
-> Technical: three parts must change, two more are likely affected.
-> Data: this is the customer table, which already holds personal and sensitive data, and we're adding to it. That's why it's red.
-> Outside systems: two systems we don't own, our CRM and regulatory reporting, both read this customer data.
-> Testing: there are ten existing tests to re-run, but two of the parts we're changing have no tests at all today.
-> And approvals: a privacy review, and a sign-off from the regulatory reporting team.
-> That's the conversation you'd normally have in a meeting, done in a few seconds."
+**[Click Why? on POST /signup]**
+Every item comes with proof. This shows the exact code the decision is based on, with file and line numbers. The AI can only assess parts that exist on the map, and its answers are verified against the code.
 
-## 6. The questions nobody asked (2:50 – 3:10)
-**SCREEN:** "What the request means", with the yellow box.
-**DO:** Point at **Questions to answer before development**.
-**SAY:**
-> "This bit is one of my favourites. It reads the ticket like a good analyst would and asks what isn't written down.
-> How will the phone number be validated? What happens if it's not provided? Is there a specific format?
-> Normally you find these out halfway through the sprint. Here they come up before anyone starts."
+**[Change userservice from Likely affected to Must change]**
+The reviewer can adjust anything. Here I'm marking the user service as must change. The app records that it was changed by a reviewer, and what the AI originally said.
 
-## 7. What changes, and how (3:10 – 4:05)
-**SCREEN:** "What changes, and how".
-**DO:** Point at the **Must change** group: **users**, **POST /signup**, **frontend**.
-**SAY:**
-> "For the engineers, here's the detail. The users table needs a new phone number column. The sign-up endpoint has to accept it. The website form has to change."
-**DO:** On **POST /signup**, click **Why?**. Let the drawer show the evidence and code lines, then close it.
-**SAY:**
-> "And every line has a 'Why'. This opens the actual code the decision is based on: the real sign-up function, with line numbers.
-> That's a big deal. The AI isn't allowed to make things up. It can only judge parts that exist on the map, and its answers are checked against the code. If it can't back something up, it's clearly marked as a rule-based result instead."
-**DO:** On **userservice** (in **Likely affected**), change the dropdown to **Must change**. It moves up and shows **Reviewer** and *(AI said: Likely affected)*.
-**SAY:**
-> "And people stay in charge. As the lead, I know the user service will definitely need a change, so I bump it up. The app remembers that I made that call, and what the AI originally said."
+**[Click Show on map]**
+This is the dependency map of the whole application, built automatically from the source code and configuration. We verified it against a hand-checked list of every connection, and all 49 were correct. Red is what must change, orange is likely affected, and yellow needs re-testing.
 
-## 8. See it on the map (4:05 – 5:00)
-**SCREEN:** Dependency Map, System view, coloured for BOA-9.
-**DO:** Scroll up and click **Show on map**.
-**SAY:**
-> "Here's the same ticket on the map. This is the whole application: the website on the left, the services behind it, the databases, and on the right the systems that sit outside our code.
-> Red is what must change. Orange is likely affected. Yellow needs re-testing. Everything faded is untouched by this change."
-**DO:** Hover **userservice** (tooltip), then hover the dashed line from **Customer Relationship Management (CRM)** to **accounts-db**.
-**SAY:**
-> "Nobody drew this by hand. It's built straight from the source code and configuration. We checked it against a hand-made list of every connection in this codebase, and it got all forty-nine right."
-**DO:** Click the **Data** tab and point at the red **users** table ("8 personal / secret").
-**SAY:**
-> "The data view shows where sensitive data lives, and every service and outside system that reads or writes it."
-**DO:** Click **System**, click **ledgerwriter**, then **What if this changes?**
-**SAY:**
-> "And you can ask the map a question. What if the payments service changes? Everything that depends on it lights up, with the reason for each one."
+**[Click Data]**
+The data view shows which tables hold sensitive data, and every service and external system that uses them.
 
-## 9. Customer journeys (5:00 – 5:20)
-**SCREEN:** Customer journeys view, with "Make a payment" selected.
-**DO:** Click **Customer journeys**. Point at the numbered steps on the map and in the list.
-**SAY:**
-> "For the business side, there's a journey view. This is what really happens when a customer sends money: the website saves the payee, the payment service checks there's enough balance, and then it records the transaction. Step by step, taken from the code."
+**[Click System, select ledgerwriter, click What if this changes?]**
+You can also select any part of the system and see everything that depends on it.
 
-## 10. It knows big from small (5:20 – 5:50)
-**SCREEN:** Board, then BOA-12.
-**DO:** Go to **Change Requests**. Point at **BOA-8** (Medium risk). Open **BOA-12** and point at its questions.
-**SAY:**
-> "It's also sensible about scale. Blocking payments to your own account is a small rule change, so it's medium risk and only needs the payments sign-off.
-> And when a ticket is vague, like 'make the balance show faster', it doesn't pretend to know. It's rated low and it asks: how much faster? What's the load time today?"
+**[Click Customer journeys]**
+The journey view shows what happens when a customer makes a payment: the payee is saved, the balance is checked, and the transaction is recorded.
 
-## 11. Back to Jira (5:50 – 6:15)
-**SCREEN:** BOA-9 analysis, then Jira.
-**DO:** Open **BOA-9**, click **Post summary to Jira** (it changes to *Posted to Jira*). Switch to tab 1, refresh BOA-9 and scroll to the new comment.
-**SAY:**
-> "Last step: one click, and the summary goes back into the Jira ticket, where the team already works. The risk, what changes, who to involve, the open questions, and a link back to all the evidence."
+**[Board: point at BOA-8, then open BOA-12]**
+Smaller changes are rated accordingly. Blocking payments to your own account is medium risk with one approval. And a vague ticket like "make the balance show faster" is rated low, with questions about how much faster and what the current load time is.
 
-## 12. Close (6:15 – 6:35)
-**SCREEN:** Copilot board, then the end card.
-**SAY:**
-> "So that's the Change Impact Copilot. It turns hours of impact analysis into minutes, flags the things that usually get missed, backs every claim with real code, and runs privately on a laptop.
-> It works with any multi-service codebase. Thanks for watching."
+**[Open BOA-9, click Post summary to Jira, show the comment in Jira]**
+Finally, the summary is posted back to the Jira ticket as a comment, with a link to the full analysis.
 
-**End card:** *Change Impact Copilot · Local AI · Proof for every claim · Works with Jira*
-
----
-
-## Recording notes
-- **Record scene by scene** and join the clips in Clipchamp. If a scene goes wrong, run `reset_demo.py`, refresh and redo just that scene. (Scenes 4, 7 and 11 change the state.)
-- **Let the screen breathe:** after each click, pause one beat before speaking.
-- **The hover moments** (scene 8) work best if you move the mouse slowly onto the box and hold it there.
-- **Length target:** 6 to 7 minutes. If you need it shorter, cut scene 9 (journeys) or the "what if" part of scene 8.
+**[Board]**
+That's the Change Impact Copilot: impact analysis from a Jira ticket in minutes, with evidence for every finding, running entirely on local AI.
