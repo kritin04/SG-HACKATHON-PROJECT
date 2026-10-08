@@ -46,8 +46,12 @@ def verify_claims(items: list[dict], pack: dict[str, str], known_names: set[str]
 
 
 def verify_doc_fix(original: str, updated: str, must_remove: list[str], must_add: list[str],
-                   allow_new_headings: bool = False) -> list[str]:
+                   allow_new_headings: bool = False, keep_lines: list[str] | None = None) -> list[str]:
     issues = []
+    updated_lines = {l.strip() for l in (updated or "").split("\n")}
+    dropped = [l for l in keep_lines or [] if l.strip() not in updated_lines]
+    if dropped:
+        issues.append(f"Changed {len(dropped)} line(s) that did not need to change")
     if not updated or not updated.strip():
         return ["Empty section"]
     if original.strip().splitlines()[0].strip() != updated.strip().splitlines()[0].strip():

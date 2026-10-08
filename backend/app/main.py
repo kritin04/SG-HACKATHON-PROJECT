@@ -168,6 +168,23 @@ def list_findings():
     return [_finding_view(f, decisions) for f in _findings()]
 
 
+@app.get("/api/docs/stats")
+def doc_stats():
+    decisions = store.decisions()
+    fs = _findings()
+    sections = [d for d in engine.index().docs.values() if d.level > 1]
+    open_ = [f for f in fs if f["id"] not in decisions]
+    affected_open = {f["section_id"] for f in open_}
+    return {"sections": len(sections), "documents": len({d.path for d in sections}),
+            "affected_sections": len(affected_open),
+            "health": round(100 * (1 - len(affected_open) / len(sections))) if sections else 100,
+            "health_before": round(100 * (1 - len({f["section_id"] for f in fs}) / len(sections))) if sections else 100,
+            "open": len(open_), "stale": sum(f["kind"] == "stale" for f in open_), "missing": sum(f["kind"] == "missing" for f in open_),
+            "approved": sum(d["action"] == "approved" for d in decisions.values()),
+            "rejected": sum(d["action"] == "rejected" for d in decisions.values()),
+            "stories_without_doc_updates": sorted({f["story"] for f in fs if not f.get("docs_touched_in_pr")})}
+
+
 @app.post("/api/docs/findings/{fid}/ai")
 def run_doc_ai(fid: str, force: bool = False):
     f = _finding(fid)

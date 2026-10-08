@@ -73,7 +73,7 @@ DOC_SYSTEM = (
     "You are a meticulous technical writer keeping documentation in sync with code. "
     "Rewrite ONLY the given Markdown section so it is correct for the current code. Keep the exact same first "
     "heading line. Keep every statement that is still correct. Make the smallest change that fixes the problem. "
-    "Do not add new headings. " + GROUNDING
+    "Keep the original line breaks: copy unchanged lines exactly as they are. Do not add new headings. " + GROUNDING
 )
 
 DOC_USER = """Problem detected: {title}

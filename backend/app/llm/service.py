@@ -108,8 +108,10 @@ class LLMService:
         if not resp:
             return meta | {"updated_section": None}
         updated = (resp.get("updated_section") or "").strip("\n")
+        draft_lines = set(rule_draft.split("\n"))
+        keep = [l for l in finding["section_text"].split("\n") if l.strip() and l in draft_lines]
         issues = verify_doc_fix(finding["section_text"], updated, must_remove, must_add,
-                                allow_new_headings=finding["detector"] == "route_undocumented")
+                                allow_new_headings=finding["detector"] == "route_undocumented", keep_lines=keep)
         cited = verify_claims([{"evidence_ids": resp.get("evidence_ids", [])}], pack)[0]
         return meta | {"updated_section": updated, "change_summary": resp.get("change_summary", ""),
                        "evidence_ids": cited["evidence_ids"], "verified": not issues, "issues": issues}
