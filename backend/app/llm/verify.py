@@ -34,8 +34,15 @@ def verify_claims(items: list[dict], pack: dict[str, str], known_names: set[str]
         ids, issues = check_citations(it.get("evidence_ids", []), pack)
         if not ids:
             issues.append("No valid evidence cited")
-        if "quote" in it and ids and not check_quote(it["quote"], ids, pack):
-            issues.append("Quote not found verbatim in cited evidence")
+        if "quote" in it and not (ids and check_quote(it["quote"], ids, pack)):
+            # the model may cite the wrong block: accept only if the quote is verbatim in another pack block
+            other = [i for i in pack if i not in ids and check_quote(it["quote"], [i], pack)]
+            if other and ids:  # never rescue a claim whose only citations were invalid
+                ids = ids + other[:1]
+                issues = [x for x in issues if x != "No valid evidence cited"]
+                it = it | {"citation_corrected": True}
+            else:
+                issues.append("Quote not found verbatim in any evidence")
         if known_names is not None and it.get("target"):
             tgt = it["target"].split("(")[0].strip().strip("`").lower()
             if not any(tgt and (tgt == n or n.endswith("." + tgt) or tgt.endswith("." + n.split(".")[-1]) or tgt == n.split(".")[-1])
@@ -43,6 +50,16 @@ def verify_claims(items: list[dict], pack: dict[str, str], known_names: set[str]
                 issues.append(f"Target '{it['target']}' not found in the code index")
         out.append(it | {"evidence_ids": ids, "verified": not issues, "issues": issues})
     return out
+
+
+def strip_inline_citations(text: str) -> str:
+    """Remove raw evidence ids from model prose (the UI shows citations separately)."""
+    text = re.sub(r"\(?\[?E-[0-9a-f]{6}\]?\)?", "", text)
+    text = re.sub(r",?\s*(as per|per|according to|as shown in|see|based on)\s+the evidence(\s+in)?(\s|,|\band\b)*(?=[.;)]|$)",
+                  "", text, flags=re.I)
+    text = re.sub(r"(\s*,)+\s*(and\s*)?(?=[.;)])", "", text)
+    text = re.sub(r"\s+([.,;])", r"\1", text)
+    return re.sub(r"\s{2,}", " ", text).strip()
 
 
 def verify_doc_fix(original: str, updated: str, must_remove: list[str], must_add: list[str],

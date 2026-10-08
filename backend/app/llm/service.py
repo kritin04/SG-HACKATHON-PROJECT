@@ -8,7 +8,7 @@ from ..engine.evidence import STORE
 from ..store import Store
 from . import prompts
 from .ollama_client import OllamaError, chat_json
-from .verify import verify_claims, verify_doc_fix
+from .verify import strip_inline_citations, verify_claims, verify_doc_fix
 
 MAX_BLOCK_CHARS = 900
 MAX_BLOCKS = 10
@@ -74,7 +74,7 @@ class LLMService:
             return meta | {"summary": None, "key_risks": [], "suggested_tests": []}
         risks = verify_claims(resp.get("key_risks", []), pack)
         tests = verify_claims(resp.get("suggested_tests", []), pack, known_names)
-        return meta | {"summary": resp.get("summary", "").strip(), "key_risks": risks, "suggested_tests": tests,
+        return meta | {"summary": strip_inline_citations(resp.get("summary", "")), "key_risks": risks, "suggested_tests": tests,
                        "evidence_pack": list(pack), "verified_count": sum(x["verified"] for x in risks + tests),
                        "total_count": len(risks) + len(tests)}
 
@@ -94,7 +94,7 @@ class LLMService:
         if not resp:
             return meta | {"summary": None}
         cited = verify_claims([{"evidence_ids": resp.get("evidence_ids", [])}], pack)[0]
-        return meta | {"summary": resp.get("summary", "").strip(), "evidence_ids": cited["evidence_ids"],
+        return meta | {"summary": strip_inline_citations(resp.get("summary", "")), "evidence_ids": cited["evidence_ids"],
                        "verified": cited["verified"], "issues": cited["issues"]}
 
     # ---- doc fix ----------------------------------------------------------------
