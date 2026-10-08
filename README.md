@@ -14,6 +14,7 @@ It runs on a real open-source banking app ([Bank of Anthos](https://github.com/G
 - Runs fully locally with Ollama: no paid APIs, no data leaves the machine, no model training.
 
 ➡️ **Read [PROJECT_GUIDE.md](PROJECT_GUIDE.md)**: every step, every detail, and the summary, in plain language.
+➡️ **Screens + demo video script: [DEMO_WALKTHROUGH.md](DEMO_WALKTHROUGH.md)**
 
 ## Quick start (Windows / PowerShell)
 

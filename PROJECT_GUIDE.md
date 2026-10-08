@@ -320,7 +320,16 @@ Each edit is saved with name and time, shown with a **Reviewer** badge, and reco
 | BOA-108 | "Make the balance show faster" | **Vague**, so the AI raises open questions |
 | BOA-109 | Minimum deposit $10 | Small payments rule |
 
+## 8b. Jira connection
+- **Connector** (`backend/app/jira/`): Jira REST API v3. `client.py` handles search (`/rest/api/3/search/jql`), get issue, create issue and add comment. `adf.py` converts Jira rich text (ADF) to plain text and back. `parse.py` turns an issue into the analyzer's format; acceptance criteria come from a custom field (`JIRA_AC_FIELD`) or an "Acceptance criteria" heading in the description. `sync.py` handles sync, status, add-to-active-sprint and **publish** (impact summary posted as a Jira comment).
+- **Settings** in `.env` (never committed; see `.env.example`): `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_JQL`, optional `JIRA_AC_FIELD`. Without them, the app uses `demo_data/jira/issues.json`.
+- **Real Jira Cloud** (used for the demo): free site, space key `BOA`, work type *Change Request*. `scripts/seed_jira.py` creates the 9 demo CRs (and adds them to the active sprint); `scripts/link_jira_keys.py` reuses existing analyses for Jira's new keys (BOA-5…13) by matching titles.
+- **Local demo tracker** (`jira_sim/`, port 8090): a small tracker with a board, issues and comments that speaks the same API. Useful offline; not Atlassian Jira.
+- **In the UI:** *Connected to Jira* bar and **Sync from Jira** (board), **Jira** links on cards, **Open in Jira** / **Post summary to Jira** (Impact page). **New change request** creates the ticket in Jira.
+
 ## 9. UI walkthrough (3 screens)
+> **Full element-by-element walkthrough and the demo video script: [DEMO_WALKTHROUGH.md](DEMO_WALKTHROUGH.md).**
+
 1. **Change Requests (board):** Jira-like columns *To analyse / Analysing / Analysed*. Cards show risk, number of parts that must change, outside systems, approvals, open questions and size. **New change request** lets you type a CR in plain English, and analysis starts right away. While analysing, the card shows the live step (1-6).
 2. **Impact Analysis page:** see 6.5.
 3. **Dependency Map:** see 5.3.
@@ -386,4 +395,5 @@ A stricter judging prompt would reduce it further, but costs a ~1.5 h re-run on 
 | Chunk 7: Impact pipeline | 6 stages, evidence-checked AI, rule fallbacks, risk points, API contract detection, tests/gaps, people, cards; background jobs with live progress |
 | Chunk 8-9: Board + Impact page | Jira-like board, new CR dialog, impact report (summary first), reviewer edits and add to scope, mini impact map |
 | Chunk 10: Overlay | CR impact overlay on the full map |
+| Chunk 12: Screens + Jira | Screen fixes (mini map, journey steps from verified links, AI-time footer); stricter judge prompt; Jira connector, demo tracker, real Jira Cloud (9 CRs seeded, sprint, comments posted back); DEMO_WALKTHROUGH.md |
 | Chunk 11: Precompute + tuning | All 9 CRs analysed with 7B (~10 min each). Rules tuned: outside systems only when their data changes; data rules only for changing tables (AI), cautious for rule fallback; board shows jobs from any process. **Scores: 100% involved parts, 100% approvals, 100% outside systems, 0 wrong "must change"** |
