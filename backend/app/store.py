@@ -1,4 +1,4 @@
-"""SQLite persistence: baselines, doc decisions, LLM cache, audit trail."""
+"""SQLite persistence: key-value results (map enrichment, analyses), LLM cache, scope edits, audit trail."""
 from __future__ import annotations
 
 import json
@@ -10,16 +10,11 @@ from pathlib import Path
 from . import config
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS baselines (
-    cr_key TEXT PRIMARY KEY, ref TEXT, sha TEXT, included TEXT, excluded TEXT, added TEXT,
-    report TEXT, confirmed_by TEXT, confirmed_at TEXT);
-CREATE TABLE IF NOT EXISTS doc_decisions (
-    finding_id TEXT PRIMARY KEY, action TEXT, final_text TEXT, reason TEXT, decided_by TEXT,
-    decided_at TEXT, commit_sha TEXT);
-CREATE TABLE IF NOT EXISTS llm_cache (
-    key TEXT PRIMARY KEY, task TEXT, model TEXT, response TEXT, seconds REAL, created_at TEXT);
-CREATE TABLE IF NOT EXISTS audit (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, actor TEXT, action TEXT, target TEXT, detail TEXT);
+CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT);
+CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, task TEXT, model TEXT, response TEXT, seconds REAL, created_at TEXT);
+CREATE TABLE IF NOT EXISTS scope_edits (id INTEGER PRIMARY KEY AUTOINCREMENT, cr_key TEXT, node_id TEXT, action TEXT,
+    verdict TEXT, note TEXT, user TEXT, at TEXT);
+CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT, actor TEXT, action TEXT, target TEXT, detail TEXT);
 """
 
 
@@ -36,74 +31,52 @@ class Store:
         with self.lock:
             self.conn.executescript(SCHEMA)
 
-    def _exec(self, sql: str, params=()):
+    def _exec(self, sql, params=()):
         with self.lock:
             cur = self.conn.execute(sql, params)
             self.conn.commit()
             return cur
 
-    def _one(self, sql: str, params=()):
+    def _all(self, sql, params=()):
         with self.lock:
-            return self.conn.execute(sql, params).fetchone()
+            return [dict(r) for r in self.conn.execute(sql, params).fetchall()]
 
-    def _all(self, sql: str, params=()):
-        with self.lock:
-            return self.conn.execute(sql, params).fetchall()
+    # key-value JSON
+    def get(self, key: str):
+        rows = self._all("SELECT value FROM kv WHERE key = ?", (key,))
+        return json.loads(rows[0]["value"]) if rows else None
 
-    # ---- audit ----------------------------------------------------------
-    def audit(self, actor: str, action: str, target: str, detail: dict | str = "") -> None:
-        self._exec("INSERT INTO audit (at, actor, action, target, detail) VALUES (?, ?, ?, ?, ?)",
-                   (now(), actor, action, target, json.dumps(detail) if isinstance(detail, dict) else detail))
+    def put(self, key: str, value) -> None:
+        self._exec("INSERT OR REPLACE INTO kv VALUES (?, ?, ?)", (key, json.dumps(value), now()))
 
-    def audit_log(self, limit: int = 200) -> list[dict]:
-        rows = self._all("SELECT * FROM audit ORDER BY id DESC LIMIT ?", (limit,))
-        return [dict(r) | {"detail": _maybe_json(r["detail"])} for r in rows]
+    def delete_prefix(self, prefix: str) -> None:
+        self._exec("DELETE FROM kv WHERE key LIKE ?", (prefix + "%",))
 
-    # ---- baselines ------------------------------------------------------
-    def save_baseline(self, cr_key: str, ref: str, sha: str, included: list[str], excluded: list[str],
-                      added: list[str], report: dict, user: str) -> dict:
-        self._exec("INSERT OR REPLACE INTO baselines VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                   (cr_key, ref, sha, json.dumps(included), json.dumps(excluded), json.dumps(added),
-                    json.dumps(report), user, now()))
-        self.audit(user, "baseline_confirmed", cr_key, {"included": len(included), "excluded": excluded, "added": added})
-        return self.baseline(cr_key)
-
-    def baseline(self, cr_key: str) -> dict | None:
-        r = self._one("SELECT * FROM baselines WHERE cr_key = ?", (cr_key,))
-        if not r:
-            return None
-        return {"cr_key": r["cr_key"], "ref": r["ref"], "sha": r["sha"], "included": json.loads(r["included"]),
-                "excluded": json.loads(r["excluded"]), "added": json.loads(r["added"]),
-                "report": json.loads(r["report"]), "confirmed_by": r["confirmed_by"], "confirmed_at": r["confirmed_at"]}
-
-    # ---- doc decisions --------------------------------------------------
-    def save_decision(self, finding_id: str, action: str, final_text: str | None, reason: str | None,
-                      user: str, commit_sha: str | None) -> None:
-        self._exec("INSERT OR REPLACE INTO doc_decisions VALUES (?, ?, ?, ?, ?, ?, ?)",
-                   (finding_id, action, final_text, reason, user, now(), commit_sha))
-        self.audit(user, f"doc_{action}", finding_id, {"reason": reason, "commit": commit_sha})
-
-    def decisions(self) -> dict[str, dict]:
-        return {r["finding_id"]: dict(r) for r in self._all("SELECT * FROM doc_decisions")}
-
-    # ---- llm cache ------------------------------------------------------
+    # LLM cache
     def cache_get(self, key: str) -> dict | None:
-        r = self._one("SELECT * FROM llm_cache WHERE key = ?", (key,))
-        return {"response": json.loads(r["response"]), "model": r["model"], "seconds": r["seconds"],
-                "created_at": r["created_at"]} if r else None
+        rows = self._all("SELECT * FROM llm_cache WHERE key = ?", (key,))
+        if not rows:
+            return None
+        r = rows[0]
+        return {"response": json.loads(r["response"]), "model": r["model"], "seconds": r["seconds"], "created_at": r["created_at"]}
 
     def cache_put(self, key: str, task: str, model: str, response: dict, seconds: float) -> None:
         self._exec("INSERT OR REPLACE INTO llm_cache VALUES (?, ?, ?, ?, ?, ?)",
                    (key, task, model, json.dumps(response), seconds, now()))
 
-    def reset(self) -> None:
-        with self.lock:
-            self.conn.executescript("DELETE FROM baselines; DELETE FROM doc_decisions; DELETE FROM audit;")
-            self.conn.commit()
+    # human scope edits on an impact analysis
+    def add_scope_edit(self, cr_key, node_id, action, verdict, note, user) -> None:
+        self._exec("INSERT INTO scope_edits (cr_key, node_id, action, verdict, note, user, at) VALUES (?,?,?,?,?,?,?)",
+                   (cr_key, node_id, action, verdict, note, user, now()))
+        self.audit(user, f"scope_{action}", cr_key, {"node": node_id, "verdict": verdict, "note": note})
 
+    def scope_edits(self, cr_key: str) -> list[dict]:
+        return self._all("SELECT * FROM scope_edits WHERE cr_key = ? ORDER BY id", (cr_key,))
 
-def _maybe_json(s):
-    try:
-        return json.loads(s)
-    except (TypeError, ValueError):
-        return s
+    # audit
+    def audit(self, actor, action, target, detail=None) -> None:
+        self._exec("INSERT INTO audit (at, actor, action, target, detail) VALUES (?,?,?,?,?)",
+                   (now(), actor, action, target, json.dumps(detail or {})))
+
+    def audit_log(self, limit: int = 200) -> list[dict]:
+        return self._all("SELECT * FROM audit ORDER BY id DESC LIMIT ?", (limit,))

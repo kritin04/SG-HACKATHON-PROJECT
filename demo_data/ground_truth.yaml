@@ -1,0 +1,48 @@
+# ANSWER KEY for impact analysis: what an experienced engineer would say after reading the Bank of Anthos code.
+# must: parts that must change. affected: must OR likely (both acceptable). controls: approval rules that must fire.
+# not: parts that must NOT be marked "must change".
+BOA-101:   # daily $5,000 send limit
+  must: [ledgerwriter]
+  affected: [ledgerwriter, frontend, transactions]
+  controls: [CTRL-PAY]
+  not: [userservice, contacts]
+BOA-102:   # payee name in history
+  must: [frontend]
+  affected: [frontend, contacts, transactionhistory]
+  controls: []
+  not: [ledgerwriter, userservice]
+BOA-103:   # delete a saved contact
+  must: [contacts, frontend]
+  affected: [contacts, frontend]
+  controls: [CTRL-API]
+  not: [ledgerwriter, balancereader]
+BOA-104:   # block payments to own account
+  must: [ledgerwriter]
+  affected: [ledgerwriter, frontend]
+  controls: [CTRL-PAY]
+  not: [userservice, contacts, balancereader]
+BOA-105:   # phone number at sign-up
+  must: [userservice, frontend]
+  affected: [userservice, frontend, users]
+  controls: [CTRL-PII]
+  externals: [Customer Relationship Management (CRM)]
+  not: [ledgerwriter, balancereader, transactionhistory]
+BOA-106:   # CSV download
+  must: [frontend]
+  affected: [frontend, transactionhistory]
+  controls: []
+  not: [ledgerwriter, userservice]
+BOA-107:   # SMS on low balance
+  affected: [ledgerwriter, balancereader]
+  controls: [CTRL-VENDOR]
+  externals: [SMS / Email Provider]
+  not: [contacts]
+BOA-108:   # "make the balance show faster" (vague)
+  affected: [balancereader, frontend]
+  expect_open_questions: true
+  not: [userservice, contacts]
+BOA-109:   # minimum deposit
+  must: [ledgerwriter]
+  affected: [ledgerwriter, frontend]
+  controls: [CTRL-PAY]
+  not: [userservice, contacts]

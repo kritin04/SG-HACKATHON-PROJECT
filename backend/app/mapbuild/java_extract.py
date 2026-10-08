@@ -151,7 +151,12 @@ def extract_java(project: Project, service: str, src_dir: Path) -> ServiceFacts:
                 ann_start = min([a.start_point[0] + 1 for _, a in anns] + [start])
                 ev = STORE.add("code", f"{service}: {cname}.{mname}()", "\n".join(lines[ann_start - 1:end]), rel,
                                ann_start, end, short)
-                calls = {_text(c.child_by_field_name("name"), src) for c in _walk(m) if c.type == "method_invocation"}
+                invs = [c for c in _walk(m) if c.type == "method_invocation"]
+                calls = {_text(c.child_by_field_name("name"), src) for c in invs}
+                call_lines = {}
+                for c in invs:
+                    nm = _text(c.child_by_field_name("name"), src)
+                    call_lines[nm] = min(call_lines.get(nm, c.start_point[0] + 1), c.start_point[0] + 1)
                 if is_test:
                     if any(a == "Test" for a, _ in anns):
                         facts.tests.append(TestCase(f"{cname}.{mname}", rel, start, ev, [], calls))
@@ -165,7 +170,7 @@ def extract_java(project: Project, service: str, src_dir: Path) -> ServiceFacts:
                                 facts.tables.append(TableUse(repo_table[cname], mode, f"{cname}.{mname}", rel,
                                                              ann.start_point[0] + 1, ev))
                     continue
-                func = Function(f"{cname}.{mname}", rel, ann_start, end, ev, calls)
+                func = Function(f"{cname}.{mname}", rel, ann_start, end, ev, calls, call_lines)
                 facts.functions.append(func)
                 for aname, ann in anns:
                     if aname in MAPPINGS:

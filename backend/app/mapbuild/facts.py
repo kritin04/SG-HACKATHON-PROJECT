@@ -12,6 +12,7 @@ class Function:
     end: int
     evidence: str
     calls: set[str] = field(default_factory=set)   # simple names of functions/methods called
+    call_lines: dict[str, int] = field(default_factory=dict)   # name -> first line where it is called
 
 
 @dataclass

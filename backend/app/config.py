@@ -14,3 +14,4 @@ PRECOMPUTE_MODEL = os.getenv("CAC_PRECOMPUTE_MODEL", "qwen2.5:7b")
 EMBED_MODEL = os.getenv("CAC_EMBED_MODEL", "nomic-embed-text")
 LLM_TIMEOUT_SECONDS = float(os.getenv("CAC_LLM_TIMEOUT", "600"))
 PROMPT_VERSION = "v2"
+SEMANTIC_SEARCH = os.getenv("CAC_SEMANTIC", "1") == "1"   # meaning-based search (needs the embedding model)

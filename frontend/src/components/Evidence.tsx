@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { X, FileCode2, FileText, GitCompare, BookMarked, Ticket, GitPullRequest, ArrowRight, Search } from 'lucide-react'
+import { X, FileCode2, FileText, GitCompare, BookMarked, Ticket, GitPullRequest, ArrowRight, Search, Settings2, Database } from 'lucide-react'
 import { api } from '../api'
 import { Badge, Spinner, TierBadge, cx } from './ui'
 
@@ -15,6 +15,8 @@ const KIND: Record<string, { label: string; icon: ReactNode; tone: string }> = {
   catalog: { label: 'Curated catalog', icon: <BookMarked size={13} />, tone: 'violet' },
   jira: { label: 'Jira', icon: <Ticket size={13} />, tone: 'blue' },
   pr: { label: 'Pull request', icon: <GitPullRequest size={13} />, tone: 'green' },
+  config: { label: 'Configuration', icon: <Settings2 size={13} />, tone: 'green' },
+  schema: { label: 'Database schema', icon: <Database size={13} />, tone: 'amber' },
 }
 
 export function EvidenceProvider({ children }: { children: ReactNode }) {
@@ -85,9 +87,9 @@ function EvidenceBody({ e }: { e: any }) {
       </pre>
     )
   }
-  const start = e.kind === 'code' && e.start ? e.start : null
+  const start = (e.kind === 'code' || e.kind === 'schema') && e.start ? e.start : null
   return (
-    <pre className={cx('scroll-thin max-h-80 overflow-auto p-3 text-xs leading-5', e.kind === 'code' ? 'bg-slate-900 text-slate-100' : 'whitespace-pre-wrap bg-white text-slate-700')}>
+    <pre className={cx('scroll-thin max-h-80 overflow-auto p-3 text-xs leading-5', e.kind === 'code' || e.kind === 'schema' ? 'bg-slate-900 text-slate-100' : 'whitespace-pre-wrap bg-white text-slate-700')}>
       {start ? e.text.split('\n').map((l: string, i: number) => (
         <div key={i}><span className="mr-3 inline-block w-6 select-none text-right text-slate-500">{start + i}</span>{l}</div>
       )) : e.text}
@@ -105,7 +107,8 @@ export function WhyChain({ steps }: { steps: any[] }) {
             <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">{s.from}</code>
             <span className="flex items-center gap-1 text-xs text-slate-500"><ArrowRight size={12} />{s.relation}<ArrowRight size={12} /></span>
             <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800">{s.to}</code>
-            {s.tier === 'curated' && <Badge tone="violet">catalog</Badge>}
+            {(s.tier === 'curated' || s.origin === 'catalog') && <Badge tone="violet">catalog</Badge>}
+            {s.origin === 'ai' && <Badge tone="amber">AI-verified</Badge>}
             {s.confidence < 0.8 && <Badge tone="amber">medium confidence</Badge>}
           </li>
         ))}

@@ -166,6 +166,7 @@ def extract_python(project: Project, service: str, src: Path) -> ServiceFacts:
                 last = d.split(".")[-1]
                 if d:
                     func.calls.add(last)
+                    func.call_lines[last] = min(func.call_lines.get(last, n.lineno), n.lineno)
                 line_ev = lambda title: STORE.add("code", title, "\n".join(lines[n.lineno - 1:(n.end_lineno or n.lineno)]),
                                                   rel, n.lineno, n.end_lineno, short)
                 # outbound HTTP

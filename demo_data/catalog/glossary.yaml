@@ -4,8 +4,10 @@ terms:
   - {term: deposit, synonyms: [deposits, top up, add money], targets: ["ep:frontend:POST /deposit", "svc:ledgerwriter"]}
   - {term: balance, synonyms: [balances, available money], targets: ["svc:balancereader"]}
   - {term: transaction history, synonyms: [history, statement, past transactions, transactions list], targets: ["svc:transactionhistory"]}
-  - {term: contact, synonyms: [contacts, payee, payees, recipient, saved account], targets: ["svc:contacts", "table:accounts-db.contacts"]}
+  - {term: saved contact, synonyms: [saved contacts, payee, payees, recipient, saved account, contacts list], targets: ["svc:contacts", "table:accounts-db.contacts"]}
   - {term: sign up, synonyms: [signup, sign-up, register, registration, new account], targets: ["ep:frontend:POST /signup", "ep:userservice:POST /users"]}
   - {term: login, synonyms: [log in, sign in, password], targets: ["ep:frontend:POST /login", "ep:userservice:GET /login"]}
   - {term: customer profile, synonyms: [phone, phone number, address, personal details], targets: ["table:accounts-db.users"]}
   - {term: limit, synonyms: [maximum, minimum, cap], targets: ["svc:ledgerwriter"]}
+  - {term: sms, synonyms: [text message, text the customer, email alert, notification, alert], targets: ["ext:sms_email_provider"]}
+  - {term: home page, synonyms: [homepage, dashboard], targets: ["ep:frontend:GET /home"]}

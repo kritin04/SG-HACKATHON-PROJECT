@@ -11,23 +11,27 @@ async function req<T = Json>(path: string, init?: RequestInit): Promise<T> {
   return r.json()
 }
 
-export const CURRENT_USER = { login: 'priya.nair', name: 'Priya Nair', role: 'Payments Lead' }
+export const CURRENT_USER = { login: 'priya.nair', name: 'Priya Nair', role: 'Lead Engineer' }
 
 export const api = {
   health: () => req('/api/health'),
-  crs: () => req('/api/crs'),
-  impact: (key: string) => req(`/api/crs/${key}/impact`),
-  impactAI: (key: string, force: boolean) => req(`/api/crs/${key}/ai?force=${force}`, { method: 'POST' }),
-  confirmBaseline: (key: string, included: string[], excluded: string[]) =>
-    req(`/api/crs/${key}/baseline`, { method: 'POST', body: JSON.stringify({ included, excluded, added: [], user: CURRENT_USER.login }) }),
-  prs: () => req('/api/prs'),
-  reconcile: (n: number) => req(`/api/prs/${n}/reconcile`),
-  reviewAI: (n: number, force: boolean) => req(`/api/prs/${n}/ai?force=${force}`, { method: 'POST' }),
-  findings: () => req('/api/docs/findings'),
-  docStats: () => req('/api/docs/stats'),
-  docAI: (id: string, force: boolean) => req(`/api/docs/findings/${id}/ai?force=${force}`, { method: 'POST' }),
-  decide: (id: string, action: 'approve' | 'reject', text?: string, reason?: string) =>
-    req(`/api/docs/findings/${id}/decision`, { method: 'POST', body: JSON.stringify({ action, text, reason, user: CURRENT_USER.login }) }),
+  map: () => req('/api/map'),
+  node: (id: string) => req(`/api/map/node/${encodeURIComponent(id)}`),
+  whatIf: (id: string) => req(`/api/map/whatif/${encodeURIComponent(id)}`),
   evidence: (ids: string[]) => req(`/api/evidence?ids=${encodeURIComponent(ids.join(','))}`),
-  audit: () => req('/api/audit'),
+  crs: () => req('/api/crs'),
+  cr: (key: string) => req(`/api/crs/${key}`),
+  analyze: (key: string, force = false) => req(`/api/crs/${key}/analyze?force=${force}`, { method: 'POST' }),
+  scope: (key: string, body: { node_id: string; action: 'add' | 'remove' | 'override'; verdict?: string; note?: string }) =>
+    req(`/api/crs/${key}/scope`, { method: 'POST', body: JSON.stringify({ ...body, user: CURRENT_USER.name }) }),
+  searchNodes: (q: string) => req(`/api/nodes/search?q=${encodeURIComponent(q)}`),
+  createCr: (body: { summary: string; description: string; acceptance_criteria: string[]; priority: string }) =>
+    req('/api/crs', { method: 'POST', body: JSON.stringify(body) }),
+}
+
+export const VERDICT: Record<string, { label: string; tone: string; color: string; dot: string }> = {
+  must_change: { label: 'Must change', tone: 'red', color: '#ef4444', dot: 'bg-red-500' },
+  likely_affected: { label: 'Likely affected', tone: 'amber', color: '#f97316', dot: 'bg-orange-500' },
+  retest_only: { label: 'Re-test only', tone: 'blue', color: '#eab308', dot: 'bg-yellow-400' },
+  not_impacted: { label: 'Not impacted', tone: 'slate', color: '#cbd5e1', dot: 'bg-slate-300' },
 }

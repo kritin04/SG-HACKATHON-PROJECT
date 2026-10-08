@@ -1,21 +1,19 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Shell } from './components/Shell'
 import { EvidenceProvider } from './components/Evidence'
-import ImpactAnalyzer from './pages/ImpactAnalyzer'
-import ReleaseReadiness from './pages/ReleaseReadiness'
-import DocHealth from './pages/DocHealth'
+import DependencyMap from './pages/DependencyMap'
+import Board from './pages/Board'
+import ImpactPage from './pages/ImpactPage'
 
 export default function App() {
   return (
     <EvidenceProvider>
       <Shell>
         <Routes>
-          <Route path="/" element={<Navigate to="/impact" replace />} />
-          <Route path="/impact" element={<ImpactAnalyzer />} />
-          <Route path="/impact/:key" element={<ImpactAnalyzer />} />
-          <Route path="/release" element={<ReleaseReadiness />} />
-          <Route path="/release/:pr" element={<ReleaseReadiness />} />
-          <Route path="/docs" element={<DocHealth />} />
+          <Route path="/" element={<Navigate to="/board" replace />} />
+          <Route path="/board" element={<Board />} />
+          <Route path="/cr/:key" element={<ImpactPage />} />
+          <Route path="/map" element={<DependencyMap />} />
         </Routes>
       </Shell>
     </EvidenceProvider>

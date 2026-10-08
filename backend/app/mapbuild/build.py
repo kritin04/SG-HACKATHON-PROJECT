@@ -133,7 +133,7 @@ def build_map(project: Project | None = None, catalog: Catalog | None = None) ->
             how = call.how + (" | method inferred: the only endpoint with this path" if not exact else "")
             evid = [call.evidence, cfg_ev, ep.evidence[0] if ep.evidence else None]
             pm.add_edge(sid, ep.id, "calls_api", "code", conf, ep.label, evid, how=how)
-            pm.add_edge(f"fn:{svc}:{call.function}", ep.id, "calls_api", "code", conf, ep.label, evid, how=how)
+            pm.add_edge(f"fn:{svc}:{call.function}", ep.id, "calls_api", "code", conf, ep.label, evid, how=how, line=call.line)
             pm.add_edge(sid, f"svc:{target_svc}", "calls_api", "code", conf, ep.label, evid)
         # database access: which database does this service connect to?
         dbs = []
@@ -159,7 +159,7 @@ def build_map(project: Project | None = None, catalog: Catalog | None = None) ->
             pm.add_edge(sid, f"db:{db}", use.mode + "s", "code", detail=use.table, evidence=ev)
             fid = f"fn:{svc}:{use.function}"
             if fid in pm.nodes:
-                pm.add_edge(fid, tid, use.mode + "s", "code", evidence=[use.evidence])
+                pm.add_edge(fid, tid, use.mode + "s", "code", evidence=[use.evidence], line=use.line)
         # in-service function calls
         by_short = {}
         for fn in f.functions:
@@ -168,7 +168,8 @@ def build_map(project: Project | None = None, catalog: Catalog | None = None) ->
             for c in fn.calls:
                 for target in by_short.get(c, []):
                     if target != fn.name:
-                        pm.add_edge(f"fn:{svc}:{fn.name}", f"fn:{svc}:{target}", "calls", "code", evidence=[fn.evidence])
+                        pm.add_edge(f"fn:{svc}:{fn.name}", f"fn:{svc}:{target}", "calls", "code", evidence=[fn.evidence],
+                                    line=fn.call_lines.get(c, fn.start))
         # tests -> endpoints / functions
         for tc in f.tests:
             tid = f"test:{svc}:{tc.name}"
