@@ -53,6 +53,8 @@ export default function ImpactPage() {
           <div className="flex items-center gap-2">
             {a && <RiskBadge level={a.risk.level} large />}
             {a?.assessment?.size && <Badge tone="blue" className="px-3 py-1 text-sm">Size {a.assessment.size}</Badge>}
+            {data.issue.url && <a href={data.issue.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-brand-700 hover:underline">Open in Jira ↗</a>}
+            {a && data.issue.url && <PublishButton crKey={data.key} published={data.published} onDone={load} />}
             {a && <Button onClick={() => nav(`/map?cr=${data.key}`)} icon={<MapIcon size={14} />}>Show on map</Button>}
             {a && !running && <Button variant="ghost" onClick={() => run(true)} icon={<RefreshCw size={14} />}>Re-run</Button>}
           </div>
@@ -149,6 +151,20 @@ export default function ImpactPage() {
         )}
       </div>
     </div>
+  )
+}
+
+function PublishButton({ crKey, published, onDone }: { crKey: string; published: any; onDone: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const go = async () => { setBusy(true); setErr(''); try { await api.publish(crKey); onDone() } catch (e: any) { setErr(e.message) } finally { setBusy(false) } }
+  return (
+    <span className="flex items-center gap-2">
+      {err && <span className="text-xs text-rose-600">{err}</span>}
+      <Button variant={published ? 'ghost' : 'primary'} disabled={busy} onClick={go} icon={busy ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}>
+        {busy ? 'Posting…' : published ? `Posted to Jira ${published.at.slice(11, 16)} · post again` : 'Post summary to Jira'}
+      </Button>
+    </span>
   )
 }
 

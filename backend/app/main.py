@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from . import config
 from .engine.evidence import STORE
 from .engine.graph import describe_path, propagate
 from .llm.ollama_client import health as ollama_health
@@ -130,7 +131,7 @@ def list_crs():
         out.append({"key": key, "summary": f["summary"], "priority": f["priority"]["name"], "status": f["status"]["name"],
                     "type": f["issuetype"]["name"], "labels": f.get("labels", []),
                     "components": [c["name"] for c in f.get("components", [])],
-                    "assignee": (f.get("assignee") or {}).get("displayName"),
+                    "assignee": (f.get("assignee") or {}).get("displayName"), "url": issue.get("url"),
                     "analysis": {"risk": a["risk"]["level"], "size": a["assessment"].get("size"),
                                  "must_change": sum(1 for i in a["items"] if i["verdict"] == "must_change"),
                                  "externals": len(a["externals"]), "controls": len(a["controls"]),
@@ -145,7 +146,8 @@ def get_cr(key: str):
     issues = load_issues()
     if key not in issues:
         raise HTTPException(404, f"Unknown change request {key}")
-    return {"key": key, "issue": issues[key], "analysis": _analysis(key), "job": _job(key)}
+    return {"key": key, "issue": issues[key], "analysis": _analysis(key), "job": _job(key),
+            "published": STATE.store.get(f"published:{key}")}
 
 
 @app.post("/api/crs/{key}/analyze")
@@ -208,8 +210,17 @@ class NewCR(BaseModel):
 @app.post("/api/crs")
 def create_cr(body: NewCR):
     import json
-    from . import config
     from .engine.impact import load_issues
+    from .jira import sync as jira
+    if jira.connected():                      # create it in Jira, then pull it back in
+        from .jira.adf import text_to_adf
+        r = jira.client().create_issue({"project": {"key": config.JIRA_JQL.split("=")[1].split()[0].strip() if "project" in config.JIRA_JQL else "BOA"},
+                                        "issuetype": {"name": "Change Request"}, "summary": body.summary,
+                                        "description": text_to_adf(body.description, body.acceptance_criteria, "Acceptance criteria"),
+                                        "priority": {"name": body.priority}, "labels": ["created-in-copilot"]})
+        jira.sync()
+        STATE.store.audit("Priya Nair", "cr_created_in_jira", r["key"], {"summary": body.summary})
+        return {"key": r["key"]}
     path = config.WORKSPACE / "new_crs.json"
     items = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
     key = f"BOA-{201 + len(items)}"
@@ -223,6 +234,45 @@ def create_cr(body: NewCR):
     path.write_text(json.dumps(items, indent=2), encoding="utf-8")
     STATE.store.audit("Priya Nair", "cr_created", key, {"summary": body.summary})
     return {"key": key}
+
+
+# ---------------------------------------------------------------------------- Jira connection
+@app.get("/api/jira/status")
+def jira_status():
+    from .jira import sync as jira
+    return jira.status() | {"settings": jira.settings()}
+
+
+@app.post("/api/jira/sync")
+def jira_sync():
+    from .jira import sync as jira
+    from .jira.client import JiraError
+    if not jira.connected():
+        raise HTTPException(400, "Jira is not configured: set JIRA_BASE_URL in .env")
+    try:
+        res = jira.sync()
+    except JiraError as exc:
+        raise HTTPException(502, str(exc)) from exc
+    STATE.store.audit("Priya Nair", "jira_sync", config.JIRA_BASE_URL, res)
+    return res
+
+
+@app.post("/api/crs/{key}/publish")
+def publish_to_jira(key: str):
+    from .jira import sync as jira
+    from .jira.client import JiraError
+    a = _analysis(key)
+    if not a:
+        raise HTTPException(400, "Analyse the change request first")
+    if not jira.connected():
+        raise HTTPException(400, "Jira is not configured")
+    try:
+        jira.publish(key, a, config.APP_URL)
+    except JiraError as exc:
+        raise HTTPException(502, str(exc)) from exc
+    STATE.store.audit("Priya Nair", "jira_comment", key, {"risk": a["risk"]["level"]})
+    STATE.store.put(f"published:{key}", {"at": time.strftime("%Y-%m-%d %H:%M:%S")})
+    return {"ok": True}
 
 
 @app.get("/api/eval")

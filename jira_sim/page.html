@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Demo Tracker · Bank of Anthos</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<style>
+  body { font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+  .adf p { margin: 0 0 .6rem; } .adf h3 { font-weight: 600; margin: .8rem 0 .3rem; } .adf ul { list-style: disc; padding-left: 1.3rem; margin-bottom: .6rem; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<header class="flex h-14 items-center justify-between bg-[#0b3d91] px-6 text-white">
+  <a href="/" class="flex items-center gap-2.5">
+    <span class="flex h-8 w-8 items-center justify-center rounded-md bg-white/15 text-sm font-bold">DT</span>
+    <span class="font-semibold">Demo Tracker</span>
+    <span class="rounded bg-white/15 px-2 py-0.5 text-[11px]">Jira-compatible REST API · for demos</span>
+  </a>
+  <div class="flex items-center gap-3 text-sm">
+    <input id="q" placeholder="Search issues" class="w-56 rounded-md border-0 bg-white/15 px-3 py-1.5 text-sm text-white placeholder-white/70 focus:outline-none" />
+    <button onclick="openCreate()" class="rounded-md bg-white px-3 py-1.5 font-medium text-[#0b3d91] hover:bg-blue-50">+ Create</button>
+  </div>
+</header>
+<main id="app" class="mx-auto max-w-[1400px] px-6 py-6"></main>
+
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40">
+  <div class="w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl">
+    <h2 class="text-lg font-semibold">Create issue · Bank of Anthos (BOA)</h2>
+    <div class="mt-4 space-y-3 text-sm">
+      <label class="block">Issue type<select id="c_type" class="mt-1 w-full rounded border px-2 py-1.5"><option>Change Request</option><option>Story</option><option>Task</option><option>Bug</option></select></label>
+      <label class="block">Summary *<input id="c_summary" class="mt-1 w-full rounded border px-2 py-1.5" /></label>
+      <label class="block">Description<textarea id="c_desc" rows="4" class="mt-1 w-full rounded border px-2 py-1.5"></textarea></label>
+      <label class="block">Acceptance criteria (one per line)<textarea id="c_ac" rows="3" class="mt-1 w-full rounded border px-2 py-1.5"></textarea></label>
+      <div class="flex gap-3">
+        <label class="block flex-1">Priority<select id="c_prio" class="mt-1 w-full rounded border px-2 py-1.5"><option>High</option><option selected>Medium</option><option>Low</option></select></label>
+        <label class="block flex-1">Labels (comma separated)<input id="c_labels" class="mt-1 w-full rounded border px-2 py-1.5" /></label>
+      </div>
+    </div>
+    <div class="mt-5 flex justify-end gap-2">
+      <button onclick="closeCreate()" class="rounded px-3 py-1.5 text-sm hover:bg-slate-100">Cancel</button>
+      <button onclick="create()" class="rounded bg-[#0b3d91] px-4 py-1.5 text-sm font-medium text-white">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLS = ['To Do', 'In Progress', 'Done']
+const PRIO = { High: 'text-red-600', Medium: 'text-amber-600', Low: 'text-slate-500' }
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const initials = n => (n || '?').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase()
+
+function adf(n) {
+  if (!n) return ''
+  if (typeof n === 'string') return `<p>${esc(n)}</p>`
+  const kids = (n.content || []).map(adf).join('')
+  switch (n.type) {
+    case 'doc': return kids
+    case 'paragraph': return `<p>${kids}</p>`
+    case 'heading': return `<h3>${kids}</h3>`
+    case 'bulletList': return `<ul>${kids}</ul>`
+    case 'orderedList': return `<ol class="list-decimal pl-5">${kids}</ol>`
+    case 'listItem': return `<li>${kids.replace(/^<p>|<\/p>$/g, '')}</li>`
+    case 'hardBreak': return '<br>'
+    case 'text': return esc(n.text).replace(/(https?:\/\/[^\s<]+)/g, '<a class="text-blue-700 underline" href="$1" target="_blank">$1</a>')
+    default: return kids
+  }
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts })
+  if (!r.ok) throw new Error(await r.text())
+  return r.json()
+}
+
+async function renderBoard() {
+  const q = document.getElementById('q').value.toLowerCase()
+  const { issues } = await api('/rest/api/3/search/jql', { method: 'POST', body: JSON.stringify({ jql: 'project = BOA ORDER BY created ASC', fields: ['*all'] }) })
+  const shown = issues.filter(i => !q || (i.key + ' ' + i.fields.summary).toLowerCase().includes(q))
+  document.getElementById('app').innerHTML = `
+    <div class="mb-5"><div class="text-xs text-slate-500">Projects / Bank of Anthos</div>
+      <h1 class="text-2xl font-semibold">BOA board</h1>
+      <p class="text-sm text-slate-500">Change requests for the Bank of Anthos platform. The Change Impact Copilot reads these through the REST API and posts its analysis back as a comment.</p></div>
+    <div class="grid grid-cols-3 gap-4">${COLS.map(c => {
+      const list = shown.filter(i => (i.fields.status?.name || 'To Do') === c)
+      return `<section class="rounded-lg bg-slate-100 p-3">
+        <div class="mb-3 flex justify-between px-1 text-xs font-semibold uppercase tracking-wide text-slate-500"><span>${c}</span><span>${list.length}</span></div>
+        <div class="space-y-2">${list.map(card).join('') || '<div class="rounded border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400">No issues</div>'}</div></section>`
+    }).join('')}</div>`
+}
+
+function card(i) {
+  const f = i.fields
+  const analysed = (f.comment?.comments || []).some(c => (c.author?.displayName || '').includes('Copilot'))
+  return `<a href="/browse/${i.key}" class="block rounded-md border border-slate-200 bg-white p-3 shadow-sm hover:border-blue-400">
+    <div class="text-sm font-medium leading-snug">${esc(f.summary)}</div>
+    <div class="mt-2 flex flex-wrap gap-1">${(f.labels || []).map(l => `<span class="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600">${esc(l)}</span>`).join('')}
+      ${analysed ? '<span class="rounded bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium text-emerald-700">✓ Impact analysed</span>' : ''}</div>
+    <div class="mt-2.5 flex items-center justify-between text-xs">
+      <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-3 rounded-sm bg-violet-500"></span><span class="font-semibold text-slate-500">${i.key}</span>
+        <span class="${PRIO[f.priority?.name] || ''}">▲ ${esc(f.priority?.name)}</span></span>
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-semibold text-blue-700" title="${esc(f.assignee?.displayName)}">${initials(f.assignee?.displayName)}</span>
+    </div></a>`
+}
+
+async function renderIssue(key) {
+  const i = await api(`/rest/api/3/issue/${key}`)
+  const f = i.fields
+  const comments = f.comment?.comments || []
+  document.getElementById('app').innerHTML = `
+    <div class="text-xs text-slate-500"><a href="/" class="hover:underline">Projects / Bank of Anthos</a> / <span class="font-semibold">${i.key}</span></div>
+    <div class="mt-2 grid grid-cols-[1fr_300px] gap-8">
+      <div>
+        <h1 class="text-2xl font-semibold">${esc(f.summary)}</h1>
+        <h2 class="mt-6 text-sm font-semibold text-slate-600">Description</h2>
+        <div class="adf mt-2 rounded-lg bg-white p-4 text-sm leading-6 shadow-sm">${adf(f.description) || '<p class="text-slate-400">No description</p>'}</div>
+        <h2 class="mt-6 text-sm font-semibold text-slate-600">Comments (${comments.length})</h2>
+        <div class="mt-2 space-y-3">${comments.map(c => `
+          <div class="rounded-lg border ${(c.author?.displayName || '').includes('Copilot') ? 'border-emerald-200 bg-emerald-50/50' : 'border-slate-200 bg-white'} p-4">
+            <div class="mb-2 flex items-center gap-2 text-xs"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">AI</span>
+              <b>${esc(c.author?.displayName)}</b><span class="text-slate-400">${esc((c.created || '').replace('T', ' ').slice(0, 16))}</span></div>
+            <div class="adf text-sm leading-6">${adf(c.body)}</div></div>`).join('') || '<p class="text-sm text-slate-400">No comments yet.</p>'}</div>
+      </div>
+      <aside class="space-y-4">
+        <select onchange="setStatus('${i.key}', this.value)" class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white">
+          ${COLS.map(c => `<option ${c === f.status?.name ? 'selected' : ''}>${c}</option>`).join('')}</select>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 text-sm">
+          <div class="mb-3 font-semibold">Details</div>
+          ${row('Type', f.issuetype?.name)}${row('Priority', f.priority?.name)}${row('Assignee', f.assignee?.displayName)}
+          ${row('Reporter', f.reporter?.displayName)}${row('Labels', (f.labels || []).join(', ') || 'None')}
+          ${row('Components', (f.components || []).map(c => c.name).join(', ') || 'None')}${row('Created', (f.created || '').slice(0, 10))}
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4 text-xs text-slate-500">REST: <code>GET /rest/api/3/issue/${i.key}</code></div>
+      </aside>
+    </div>`
+}
+const row = (k, v) => `<div class="flex justify-between border-b border-slate-100 py-1.5 last:border-0"><span class="text-slate-500">${k}</span><span class="text-right">${esc(v)}</span></div>`
+
+async function setStatus(key, status) { await api(`/sim/issue/${key}/status`, { method: 'POST', body: JSON.stringify({ status }) }) }
+function openCreate() { document.getElementById('modal').style.display = 'flex' }
+function closeCreate() { document.getElementById('modal').style.display = 'none' }
+async function create() {
+  const v = id => document.getElementById(id).value
+  const ac = v('c_ac').split('\n').map(s => s.trim()).filter(Boolean)
+  const desc = { type: 'doc', version: 1, content: [
+    ...v('c_desc').split('\n\n').filter(Boolean).map(p => ({ type: 'paragraph', content: [{ type: 'text', text: p }] })),
+    ...(ac.length ? [{ type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: 'Acceptance criteria' }] },
+      { type: 'bulletList', content: ac.map(a => ({ type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: a }] }] })) }] : [])] }
+  const r = await api('/rest/api/3/issue', { method: 'POST', body: JSON.stringify({ fields: {
+    project: { key: 'BOA' }, issuetype: { name: v('c_type') }, summary: v('c_summary'), description: desc,
+    priority: { name: v('c_prio') }, labels: v('c_labels').split(',').map(s => s.trim()).filter(Boolean) } }) })
+  closeCreate(); location.href = `/browse/${r.key}`
+}
+
+document.getElementById('q').addEventListener('input', () => location.pathname === '/' && renderBoard())
+const m = location.pathname.match(/^\/browse\/(.+)$/)
+m ? renderIssue(decodeURIComponent(m[1])) : renderBoard()
+</script>
+</body>
+</html>

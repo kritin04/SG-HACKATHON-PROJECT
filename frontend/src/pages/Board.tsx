@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Sparkles, Loader2, User, AlertTriangle, ShieldAlert, Network, HelpCircle } from 'lucide-react'
+import { Plus, Sparkles, Loader2, User, AlertTriangle, ShieldAlert, Network, HelpCircle, RefreshCw, Link2, ExternalLink } from 'lucide-react'
 import { api } from '../api'
 import { Badge, Button, RiskBadge, Spinner, cx } from '../components/ui'
 
@@ -37,6 +37,7 @@ export default function Board() {
           </div>
           <Button variant="primary" onClick={() => setCreating(true)} icon={<Plus size={15} />}>New change request</Button>
         </div>
+        <JiraBar onSynced={load} />
         {!crs ? <Spinner label="Loading change requests…" /> : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             {COLUMNS.map(col => {
@@ -73,7 +74,8 @@ export default function Board() {
                         )}
                         {c.job?.status === 'error' && <div className="mt-2 text-xs text-rose-600">Analysis failed: {c.job.error}</div>}
                         <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
-                          <span className="flex items-center gap-1 text-xs text-slate-500"><User size={12} />{c.assignee}</span>
+                          <span className="flex items-center gap-2 text-xs text-slate-500"><span className="flex items-center gap-1"><User size={12} />{c.assignee}</span>
+                            {c.url && <a href={c.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-brand-700 hover:underline"><ExternalLink size={11} />Jira</a>}</span>
                           {col.id === 'todo' && <span onClick={e => start(e, c.key)}><Button size="sm" variant="primary" icon={<Sparkles size={12} />}>Analyse impact</Button></span>}
                           {col.id === 'done' && <span className="text-xs font-medium text-brand-700">Open analysis →</span>}
                         </div>
@@ -88,6 +90,40 @@ export default function Board() {
         )}
       </div>
       {creating && <NewCrDialog onClose={() => setCreating(false)} onCreated={k => { setCreating(false); nav(`/cr/${k}`) }} />}
+    </div>
+  )
+}
+
+function JiraBar({ onSynced }: { onSynced: () => void }) {
+  const [st, setSt] = useState<any>(null)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const load = () => api.jiraStatus().then(setSt).catch(() => setSt(null))
+  useEffect(() => { load() }, [])
+  if (!st) return null
+  const sync = async () => {
+    setBusy(true); setMsg('')
+    try { const r = await api.jiraSync(); setMsg(`Synced ${r.count} issue(s) from Jira`); await load(); onSynced() }
+    catch (e: any) { setMsg(e.message) } finally { setBusy(false) }
+  }
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-3 text-sm">
+        <span className={cx('flex h-8 w-8 items-center justify-center rounded-lg', st.connected && st.reachable ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500')}><Link2 size={16} /></span>
+        {st.connected ? (
+          <div>
+            <div className="font-medium text-slate-900">Connected to Jira <span className={cx('ml-1 inline-block h-2 w-2 rounded-full', st.reachable ? 'bg-emerald-500' : 'bg-rose-500')} /></div>
+            <div className="text-xs text-slate-500">{st.base_url} · <code>{st.jql}</code> · {st.issues} issue(s) · last sync {st.last_sync ?? 'never'}{st.user ? ` · as ${st.user}` : ''}{st.error ? ` · ${st.error}` : ''}</div>
+          </div>
+        ) : (
+          <div><div className="font-medium text-slate-900">Using demo change requests</div><div className="text-xs text-slate-500">Set JIRA_BASE_URL in .env to read change requests from a real Jira (or the local demo tracker).</div></div>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+        {msg && <span className="text-xs text-slate-600">{msg}</span>}
+        {st.connected && <a href={st.base_url} target="_blank" rel="noreferrer" className="text-xs font-medium text-brand-700 hover:underline">Open Jira ↗</a>}
+        {st.connected && <Button variant="primary" size="sm" disabled={busy} onClick={sync} icon={<RefreshCw size={13} className={busy ? 'animate-spin' : ''} />}>{busy ? 'Syncing…' : 'Sync from Jira'}</Button>}
+      </div>
     </div>
   )
 }

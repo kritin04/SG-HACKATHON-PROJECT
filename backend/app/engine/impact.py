@@ -27,7 +27,11 @@ JUDGE_TYPES = ("service", "endpoint", "table", "external")
 
 
 def load_issues() -> dict[str, dict]:
-    items = json.loads((config.DEMO_DATA / "jira" / "issues.json").read_text(encoding="utf-8"))
+    """Change requests: from Jira when connected (last sync), otherwise from the demo files."""
+    from ..jira.sync import cached_issues
+    items = cached_issues()
+    if items is None:
+        items = json.loads((config.DEMO_DATA / "jira" / "issues.json").read_text(encoding="utf-8"))
     extra = config.WORKSPACE / "new_crs.json"
     if extra.exists():
         items += json.loads(extra.read_text(encoding="utf-8"))

@@ -25,6 +25,9 @@ export const api = {
   scope: (key: string, body: { node_id: string; action: 'add' | 'remove' | 'override'; verdict?: string; note?: string }) =>
     req(`/api/crs/${key}/scope`, { method: 'POST', body: JSON.stringify({ ...body, user: CURRENT_USER.name }) }),
   searchNodes: (q: string) => req(`/api/nodes/search?q=${encodeURIComponent(q)}`),
+  jiraStatus: () => req('/api/jira/status'),
+  jiraSync: () => req('/api/jira/sync', { method: 'POST' }),
+  publish: (key: string) => req(`/api/crs/${key}/publish`, { method: 'POST' }),
   createCr: (body: { summary: string; description: string; acceptance_criteria: string[]; priority: string }) =>
     req('/api/crs', { method: 'POST', body: JSON.stringify(body) }),
 }
