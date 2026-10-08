@@ -1,0 +1,35 @@
+# Curated: change controls. Synthetic examples - not real regulatory requirements.
+controls:
+  - id: CTRL-PRC-01
+    name: Pricing change approval
+    description: Any change to customer fees or pricing needs Payments Lead approval, tests, and updated fee documentation.
+    triggers:
+      paths: ["payments_service/fees.py"]
+      keywords: [fee, pricing]
+    required_evidence:
+      - {type: approver_role, role: payments-lead}
+      - {type: test_change}
+      - {type: doc_change, paths: ["docs/fees.md"]}
+  - id: CTRL-PRIV-01
+    name: Personal data change review
+    description: Changes that read or write personal data (PII) need Privacy Officer review.
+    triggers:
+      data_classes: [PII]
+    required_evidence:
+      - {type: approver_role, role: privacy-officer}
+  - id: CTRL-REG-01
+    name: Regulatory reporting impact review
+    description: Changes affecting data consumed by the Regulatory Reporting Hub need Reg Reporting Lead sign-off and extract tests.
+    triggers:
+      external_systems: [regulatory_reporting_hub]
+    required_evidence:
+      - {type: approver_role, role: regreport-lead}
+      - {type: test_change, paths: ["tests/test_reporting*"]}
+  - id: CTRL-FIN-01
+    name: Financial data integrity
+    description: Schema or logic changes to financial records need automated test evidence.
+    triggers:
+      data_classes: [Financial]
+      paths: ["migrations/**"]
+    required_evidence:
+      - {type: test_change}

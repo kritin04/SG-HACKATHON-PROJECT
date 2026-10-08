@@ -1,0 +1,18 @@
+{
+  "key": "PAY-120",
+  "fields": {
+    "issuetype": {"name": "Story"},
+    "status": {"name": "Done"},
+    "priority": {"name": "Medium"},
+    "summary": "Send SMS when a transfer completes",
+    "description": "Subscribe to payments.transfer.completed and send the customer an SMS confirmation.",
+    "acceptance_criteria": ["Customer receives an SMS after every completed transfer"],
+    "components": [{"name": "Notifications"}],
+    "labels": ["customer-facing"],
+    "reporter": {"displayName": "Sara Ong"},
+    "assignee": {"displayName": "Sara Ong"},
+    "created": "2026-08-12T09:00:00+08:00",
+    "resolutiondate": "2026-08-20T10:00:00+08:00",
+    "linked_prs": [51]
+  }
+}

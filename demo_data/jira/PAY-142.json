@@ -1,0 +1,22 @@
+{
+  "key": "PAY-142",
+  "fields": {
+    "issuetype": {"name": "Change Request"},
+    "status": {"name": "To Do"},
+    "priority": {"name": "High"},
+    "summary": "Introduce cross-border transfer fee with FX markup",
+    "description": "Customers sending money overseas must be charged a cross-border fee of 0.5% of the amount plus an FX markup (in basis points). The fee and FX markup must be shown in the fee quote and recorded in the ledger for every cross-border transfer. Regulatory reporting of fees must include the new FX markup component.",
+    "acceptance_criteria": [
+      "Cross-border transfers are charged FEE_RATE_CROSSBORDER plus FX markup",
+      "GET /fees/quote returns the fee and FX markup for a destination country",
+      "Ledger entries store the FX markup",
+      "The daily regulatory extract includes the FX markup"
+    ],
+    "components": [{"name": "Payments"}, {"name": "Ledger"}],
+    "labels": ["pricing", "customer-facing"],
+    "reporter": {"displayName": "Mei Lim"},
+    "assignee": {"displayName": "Arjun Kumar"},
+    "created": "2026-10-01T09:00:00+08:00",
+    "linked_prs": [57]
+  }
+}

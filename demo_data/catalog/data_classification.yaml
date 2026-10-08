@@ -1,0 +1,11 @@
+# Curated: data classification of table columns.
+columns:
+  customer_profile.full_name: PII
+  customer_profile.id_number: PII
+  customer_profile.phone: PII
+  customer_profile.residency_country: PII
+  transfers.amount: Financial
+  transfers.fee: Financial
+  ledger_entries.amount: Financial
+  ledger_entries.fee: Financial
+  ledger_entries.fx_markup: Financial

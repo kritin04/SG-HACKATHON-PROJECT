@@ -1,0 +1,29 @@
+# Curated: business vocabulary -> code/data entities.
+terms:
+  - term: fee
+    synonyms: [fees, pricing, charge, charged]
+    entities: ["mod:payments_service.fees"]
+  - term: cross-border
+    synonyms: [overseas, international, foreign, destination country]
+    entities: ["mod:payments_service.fees", "mod:payments_service.transfers"]
+  - term: fx markup
+    synonyms: [fx, exchange rate, markup]
+    entities: ["mod:payments_service.fees"]
+  - term: fee quote
+    synonyms: [quote]
+    entities: ["route:GET /fees/quote"]
+  - term: ledger
+    synonyms: [ledger entries, posting, postings]
+    entities: ["mod:ledger_service.ledger", "table:ledger_entries"]
+  - term: regulatory reporting
+    synonyms: [regulatory extract, daily extract, regulator]
+    entities: ["mod:reporting.extract"]
+  - term: sms
+    synonyms: [notification text, text message]
+    entities: ["mod:notification_service.consumer", "mod:notification_service.sms"]
+  - term: daily limit
+    synonyms: [transfer limit]
+    entities: ["mod:payments_service.transfers"]
+  - term: customer profile
+    synonyms: [residency, personal details, phone number]
+    entities: ["mod:customer_service.profile"]

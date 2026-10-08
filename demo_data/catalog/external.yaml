@@ -1,0 +1,20 @@
+# Curated: downstream systems that live outside this repository.
+external_systems:
+  - id: regulatory_reporting_hub
+    name: Regulatory Reporting Hub
+    description: Receives the daily transaction and fee extract for regulatory submissions.
+    consumes: ["mod:reporting.extract", "table:ledger_entries"]
+    owners: ["@regreport-team"]
+    criticality: high
+  - id: finance_gl
+    name: Finance General Ledger
+    description: Books every ledger posting into the bank's general ledger.
+    consumes: ["topic:ledger.entry.posted"]
+    owners: ["@finance-systems"]
+    criticality: high
+  - id: customer_statements
+    name: Customer Statements
+    description: Monthly statements generated from the transfers table.
+    consumes: ["table:transfers"]
+    owners: ["@statements-team"]
+    criticality: medium

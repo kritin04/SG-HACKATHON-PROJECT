@@ -1,0 +1,4 @@
+{"number": 52, "title": "PAY-131: Channel-based fee pricing", "state": "merged", "jira_key": "PAY-131",
+ "user": {"login": "wei.chen"}, "base": {"ref": "main", "rev": "pr-52-base"}, "head": {"ref": "feature/PAY-131-mobile-fee", "rev": "pr-52-head"},
+ "reviews": [{"user": {"login": "priya.nair"}, "state": "APPROVED"}], "labels": [{"name": "pricing"}],
+ "created_at": "2026-09-05T09:00:00+08:00", "merged_at": "2026-09-08T14:30:00+08:00"}

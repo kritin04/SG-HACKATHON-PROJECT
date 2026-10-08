@@ -1,0 +1,6 @@
+{"number": 57, "title": "PAY-142: Cross-border transfer fee with FX markup", "state": "open", "jira_key": "PAY-142",
+ "user": {"login": "arjun.k"}, "base": {"ref": "main", "rev": "pr-57-base"}, "head": {"ref": "feature/PAY-142-crossborder-fee", "rev": "pr-57-head"},
+ "reviews": [{"user": {"login": "priya.nair"}, "state": "APPROVED"}], "requested_reviewers": [{"login": "wei.chen"}],
+ "labels": [{"name": "pricing"}, {"name": "payments"}],
+ "body": "Adds a cross-border fee and FX markup. FX markup is posted to the ledger. Destination country defaults to the customer's country.",
+ "created_at": "2026-10-06T10:30:00+08:00", "merged_at": null}

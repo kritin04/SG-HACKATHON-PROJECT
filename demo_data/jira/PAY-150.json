@@ -1,0 +1,19 @@
+{
+  "key": "PAY-150",
+  "fields": {
+    "issuetype": {"name": "Change Request"},
+    "status": {"name": "To Do"},
+    "priority": {"name": "Low"},
+    "summary": "Reword the transfer completed SMS",
+    "description": "Marketing wants the SMS sent by on_transfer_completed to include the bank name and a support hotline. Only the notification text changes.",
+    "acceptance_criteria": [
+      "SMS text includes 'NovaBank' and the hotline number"
+    ],
+    "components": [{"name": "Notifications"}],
+    "labels": ["customer-facing"],
+    "reporter": {"displayName": "Sara Ong"},
+    "assignee": {"displayName": "Sara Ong"},
+    "created": "2026-10-03T11:00:00+08:00",
+    "linked_prs": []
+  }
+}

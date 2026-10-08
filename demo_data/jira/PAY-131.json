@@ -1,0 +1,21 @@
+{
+  "key": "PAY-131",
+  "fields": {
+    "issuetype": {"name": "Story"},
+    "status": {"name": "Done"},
+    "priority": {"name": "Medium"},
+    "summary": "Channel-based fee pricing (mobile discount)",
+    "description": "Mobile banking transfers get a discounted fee rate. The transfer API response should return the fee as fee_amount.",
+    "acceptance_criteria": [
+      "Mobile channel uses FEE_RATE_MOBILE",
+      "POST /transfers response returns fee_amount"
+    ],
+    "components": [{"name": "Payments"}],
+    "labels": ["pricing", "customer-facing"],
+    "reporter": {"displayName": "Priya Nair"},
+    "assignee": {"displayName": "Wei Chen"},
+    "created": "2026-08-28T09:00:00+08:00",
+    "resolutiondate": "2026-09-08T14:30:00+08:00",
+    "linked_prs": [52]
+  }
+}

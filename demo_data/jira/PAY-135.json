@@ -1,0 +1,18 @@
+{
+  "key": "PAY-135",
+  "fields": {
+    "issuetype": {"name": "Story"},
+    "status": {"name": "Done"},
+    "priority": {"name": "High"},
+    "summary": "Enforce daily transfer limit",
+    "description": "Reject transfers above a configurable daily limit.",
+    "acceptance_criteria": ["Transfers above MAX_DAILY_LIMIT are rejected"],
+    "components": [{"name": "Payments"}],
+    "labels": ["risk"],
+    "reporter": {"displayName": "Priya Nair"},
+    "assignee": {"displayName": "Arjun Kumar"},
+    "created": "2026-09-15T09:00:00+08:00",
+    "resolutiondate": "2026-09-22T11:15:00+08:00",
+    "linked_prs": [53]
+  }
+}
