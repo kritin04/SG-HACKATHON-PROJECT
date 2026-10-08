@@ -222,7 +222,7 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
         readers = sorted({e.source.split(":")[1] for e in pm.in_edges(i["id"], "reads") if e.source.startswith("svc:")})
         data.append({"id": i["id"], "label": i["label"], "verdict": i["verdict"], "classifications": cls,
                      "writers": writers, "readers": readers, "new_fields": []})
-        if i["verdict"] in ("must_change", "likely_affected"):
+        if i["verdict"] == "must_change" or (i["by"] == "rules" and i["verdict"] == "likely_affected"):   # AI: only data that changes; rules: stay cautious
             for c in cls:
                 classes.setdefault(c, []).append(i["label"])
     for d in understanding["new_data"]:
