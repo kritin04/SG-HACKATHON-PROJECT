@@ -103,7 +103,7 @@ The app has **3 screens**, all reached from the dark sidebar on the left.
 | **High risk** (red / amber / green) | Overall risk from the analysis |
 | **High** | Jira priority (from the ticket) |
 | Title | Ticket summary |
-| ⚠ **5 must change** | Number of parts that must be edited |
+| ⚠ **4 must change** | Number of parts that must be edited |
 | **2 outside system(s)** | Systems outside our code that are affected |
 | **3 approval(s)** | Bank rules that require sign-off |
 | ? **4 open question(s)** | Things the BA must clarify |
@@ -138,7 +138,7 @@ The app has **3 screens**, all reached from the dark sidebar on the left.
 | Card | Answers | Example (BOA-9) |
 |---|---|---|
 | **Business** | What changes for customers or the bank? | "Enhances security by letting the bank contact customers…" |
-| **Technical** | How many parts change? Any API changes? | "5 must change · 0 likely · 7 re-test · API contract changes" |
+| **Technical** | How many parts change? Any API changes? | "4 must change · 1 likely affected · 11 re-test · API contract changes" |
 | **Data** | Is sensitive data involved? | "Personal, Secret data · 2 tables involved" |
 | **Outside systems** | Which systems we don't own are affected? | "Regulatory Reporting, CRM" |
 | **Testing** | Tests to re-run, gaps, new test ideas | "10 existing tests to re-run · 2 gaps · 5 new scenarios suggested" |
@@ -265,7 +265,7 @@ Slides in from the right:
 
 ### Scene 5: The answer at a glance (1:50 – 2:40)
 - **SHOW:** Open **BOA-9**. Hover the summary, then point at the **6 cards** one by one. Show **High risk · Size M**.
-- **SAY:** *"In ten seconds a manager gets the answer: high risk, medium size. Five parts must change. It touches personal data, so a privacy review is needed. Two systems outside our code, Regulatory Reporting and the CRM, read customer data, so those teams must be told. And there are existing tests to re-run, plus two gaps with no tests today."*
+- **SAY:** *"In ten seconds a manager gets the answer: high risk, medium size. Four parts must change. It touches personal data, so a privacy review is needed. Two systems outside our code, Regulatory Reporting and the CRM, read customer data, so those teams must be told. And there are existing tests to re-run, plus two gaps with no tests today."*
 
 ### Scene 6: Questions for the BA (2:40 – 3:00)
 - **SHOW:** The yellow **Questions to answer before development** box.
@@ -329,7 +329,7 @@ Slides in from the right:
 | Question | Answer |
 |---|---|
 | *Is the AI making things up?* | It can only judge parts found in the **verified map**. Every claim cites evidence that's checked by code, and anything unproven falls back to rules and is labelled. The map itself scores 49/49 against a hand-made answer key. |
-| *How accurate is the impact analysis?* | On 9 test tickets against an engineer's answer key: **100%** of the parts that should be involved were found, **100%** of required approvals and outside systems, and **0** parts wrongly marked "must change". It's sometimes over-cautious, and a reviewer can fix that with one click. |
+| *How accurate is the impact analysis?* | On 9 test tickets against an engineer's answer key: **100%** of the parts that should be involved were found, **100%** of required approvals and outside systems, and **0** parts wrongly marked "must change". Risk levels match an engineer's view: only the personal-data and new-vendor tickets are High; the vague one is Low with questions. Where it disagrees (e.g. which service carries the main change), a reviewer fixes it with one click. |
 | *Does data leave the bank?* | No. The AI models run locally (Ollama). Jira is reached only through its API with your token. |
 | *Did you train a model?* | No training. It uses existing open models with retrieval, structured prompts and verification. |
 | *Will it work on our codebase?* | Yes for Python and Java services today; other languages plug in the same way. The owners, outside systems and rules would be imported from the bank's existing registers (CMDB, interface catalogue, data register, change policy). |

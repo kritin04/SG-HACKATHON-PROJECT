@@ -355,22 +355,23 @@ Run `cd backend; .venv\Scripts\python -m pytest -q`:
 | Token trust | 5 | 5 | 5 | 0 |
 | **Overall** | **49** | **48 (98%)** | **49 (100%)** | **0** |
 
-**Impact accuracy** (qwen2.5:7b analyses of all 9 CRs vs `ground_truth.yaml`, via `GET /api/eval`):
+**Impact accuracy** (qwen2.5:7b analyses of all 9 CRs vs `ground_truth.yaml`, via `GET /api/eval`; final version with stricter prompts and tuned rules):
 
 | Measure | Result | Meaning |
 |---|---|---|
 | Involved parts found (must change or likely affected) | **100%** | Nothing that should be on the radar was missed |
 | Approval rules that should fire | **100%** | |
-| Outside systems that should be flagged | **100%** | |
+| Outside systems that should be flagged | **100%** | and none flagged wrongly on read-only or validation-only changes |
 | Wrongly marked "must change" (from the "not" lists) | **0** | |
-| "Must change" placed on the right part | **78%** | In BOA-102 and BOA-106 the AI put the main change in `transactionhistory`, where the key expects `frontend`. Both designs are possible, and one click fixes it |
-| Vague request raises questions (BOA-108) | ✅ | "How much faster should the home page be?", "What is the current performance baseline?" … |
+| "Must change" placed on the expected part | **67%** | The AI sometimes puts the main change in a different (also valid) service, e.g. `transactionhistory` instead of `frontend` for BOA-102/106, and `frontend` as *likely* for BOA-103. A reviewer fixes it with one click |
+| Risk level | realistic | **High** only for BOA-105 (personal data + CRM + regulator) and BOA-107 (new SMS vendor); payment-rule CRs **Medium**; vague BOA-108 **Low** with 3 open questions |
 
-**Known weakness: over-caution.** The model tends to over-include. Examples: it marks the `transactions` table "must change" when it's only read (BOA-101, BOA-104), and it flags outside systems or extra approvals for small payment-validation changes (BOA-104, BOA-109 come out "High"). Two rules already reduce this:
-1. outside systems only count when data they read actually changes;
-2. personal-data rules only fire for tables that actually change.
-
-A stricter judging prompt would reduce it further, but costs a ~1.5 h re-run on this CPU.
+**How over-caution was reduced** (first run: every payment change was "High"):
+1. **Stricter judge prompt:** smallest correct set; a table only "must change" if its columns or stored data change; outside systems only if the data they receive changes. Average "must change" items per CR fell from 3.4 to 2.4.
+2. **Outside-system rule:** affected only if a table they read gains fields or itself must change.
+3. **Data rules** (e.g. personal data) only for tables that actually change.
+4. **API-contract rule:** an internal logic change does not change a service's API; only changing endpoints, or new features/integrations wired between services, count.
+5. The previous run is kept in `workspace/analyses_backup_v1.json` for comparison.
 
 ## 11. Limits and adapting to a real bank
 - **Languages:** Python and Java are supported now. Others need an extractor that produces the same `ServiceFacts` (tree-sitter has grammars for most languages).

@@ -246,17 +246,19 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
             callers = [e.source.split(":")[1] for e in pm.in_edges(i["id"], "calls_api") if e.source.startswith("svc:")]
             if callers:
                 contract.append({"api": i["label"], "service": i["service"], "callers": callers})
-        if i["type"] == "service":
+        # a service whose internal logic changes does not change its API; only new features / integrations
+        # usually add or alter an API that its (also changing) callers must start using
+        if i["type"] == "service" and understanding.get("change_type") in ("new feature", "integration", "data change"):
             callers = sorted({e.source.split(":")[1] for e in pm.in_edges(i["id"], "calls_api") if e.source.startswith("svc:")
                               and by_id.get(e.source, {}).get("verdict") in ("must_change", "likely_affected")})
             if callers and not any(c["service"] == i["label"] for c in contract):
                 contract.append({"api": f"{i['label']} API", "service": i["label"], "callers": callers})
     # an outside system is only affected if data it reads actually CHANGES (a writer of that table changes,
     # or the table gains fields). Read-only changes on our side cannot affect what it receives.
-    changed_tables = {d["id"] for d in data if d["new_fields"]}
-    for d in data:
-        if any(by_id.get(f"svc:{w}", {}).get("verdict") in ("must_change", "likely_affected") for w in d["writers"]):
-            changed_tables.add(d["id"])
+    # a table's DATA changes only if it gains fields, the AI says the table itself must change, or (rule fallback,
+    # no AI) it was flagged by rules - a service merely writing the same kind of rows does not change what is sent on.
+    changed_tables = {d["id"] for d in data if d["new_fields"] or d["verdict"] == "must_change"
+                      or (by_id.get(d["id"], {}).get("by") == "rules" and d["verdict"] == "likely_affected")}
     for i in items:
         if i["type"] != "external" or i["verdict"] == "not_impacted":
             continue
