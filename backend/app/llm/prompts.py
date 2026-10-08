@@ -105,7 +105,8 @@ Return:
 - "change_type": the main kind of change.
 - "intent": one plain sentence saying what the business wants.
 - "business_terms": key business words from the request (max 6).
-- "likely_parts": names from the list above that will most likely need to CHANGE (max 4).
+- "likely_parts": names from the list above whose code or data will most likely need to CHANGE (max 3; only the
+  parts that really must be edited, not everything that is connected).
 - "new_data": new pieces of data the change needs to store (field name, the existing table it probably belongs to
   or "new", and whether it is Personal or Financial data). Empty list if none.
 - "outside_systems": names from the list above of outside systems this change involves (empty if none).
@@ -148,7 +149,16 @@ For EVERY candidate id, decide a "verdict":
 - "retest_only": no change needed, but it depends on something that changes, so it must be re-tested
 - "not_impacted": not affected by this request
 and write "how": one plain sentence on HOW it is affected (what changes, or why it must be re-tested).
-Cite "evidence_ids" where you can."""
+Cite "evidence_ids" where you can.
+
+Be precise, like an experienced lead engineer. Over-marking causes false alarms, extra approvals and wasted work:
+- Choose the SMALLEST set of "must_change" parts that delivers the request. Most candidates are usually
+  "retest_only" or "not_impacted".
+- A TABLE is "must_change" only if its columns change or it must store a new kind of data. A table that is only
+  read, or keeps receiving the same kind of rows, is at most "retest_only".
+- An OUTSIDE SYSTEM is "not_impacted" unless the data it receives changes in structure or meaning.
+- A service is "must_change" only if its own code must be edited; if it just calls or is called by a changing
+  part, prefer "retest_only"."""
 
 JUDGE_SCHEMA = {"type": "object", "properties": {
     "items": {"type": "array", "items": {"type": "object", "properties": {
