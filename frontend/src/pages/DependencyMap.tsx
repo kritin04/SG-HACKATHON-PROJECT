@@ -18,8 +18,8 @@ const STYLE: any[] = [
   { selector: 'node.service', style: { 'background-color': '#eef4ff', 'border-color': '#3b6ef5', 'font-weight': 600 } },
   { selector: 'node.database', style: { shape: 'barrel', 'background-color': '#fffbeb', 'border-color': '#f59e0b', width: 150, height: 58 } },
   { selector: 'node.external', style: { shape: 'cut-rectangle', 'background-color': '#f5f3ff', 'border-color': '#7c3aed', 'border-style': 'dashed', width: 190 } },
-  { selector: 'node.endpoint', style: { width: 200, height: 24, 'font-size': 10, 'font-family': 'JetBrains Mono, Consolas, monospace', 'border-color': '#93c5fd', 'font-weight': 400 } },
-  { selector: 'node.table', style: { width: 200, height: 26, 'font-size': 10.5, 'background-color': '#fff7ed', 'border-color': '#fb923c' } },
+  { selector: 'node.endpoint', style: { width: 210, height: 24, 'font-size': 11, 'text-wrap': 'none', 'border-color': '#93c5fd', 'font-weight': 500, color: '#1e3a8a' } },
+  { selector: 'node.table', style: { width: 200, height: 26, 'font-size': 11, 'text-wrap': 'none', 'background-color': '#fff7ed', 'border-color': '#fb923c' } },
   { selector: 'node.bigtable', style: { height: 48, width: 220 } },
   { selector: 'node.table.sensitive', style: { 'background-color': '#fff1f2', 'border-color': '#e11d48' } },
   { selector: ':parent', style: { 'text-valign': 'top', 'text-halign': 'center', 'text-margin-y': -4, padding: 14, 'font-weight': 600,
@@ -65,7 +65,7 @@ const ORIGIN: Record<string, { label: string; tone: string }> = {
 export default function DependencyMap() {
   const [map, setMap] = useState<any>(null)
   const [error, setError] = useState('')
-  const [view, setView] = useState<View>('system')
+  const [view, setView] = useState<View>(() => (new URLSearchParams(window.location.search).get('view') as View) || 'system')
   const [opts, setOpts] = useState({ security: false, outside: true, ops: false })
   const [selected, setSelected] = useState<{ kind: 'node' | 'edge'; data: any } | null>(null)
   const [whatIf, setWhatIf] = useState<any>(null)
@@ -125,6 +125,9 @@ export default function DependencyMap() {
     cy.on('tap', evt => { if (evt.target === cy) { setSelected(null) } })
     return () => { cy.destroy(); cyRef.current = null }
   }, [map, view, opts, nodes])
+
+  // journeys view: pre-select the first journey so the numbered steps show immediately
+  useEffect(() => { if (view === 'journeys' && !journey && journeys.length) setJourney(journeys.find((j: any) => /payment/i.test(j.entry)) ?? journeys[0]) }, [view, journeys, journey])
 
   // change-request impact overlay
   const verdictsRef = useRef<Record<string, any>>({})
@@ -203,7 +206,7 @@ export default function DependencyMap() {
         <label className="flex items-center gap-1.5 text-xs text-slate-600"><input type="checkbox" checked={opts.security} onChange={e => setOpts({ ...opts, security: e.target.checked })} />Login-token links</label>
         {view === 'apis' && <label className="flex items-center gap-1.5 text-xs text-slate-600"><input type="checkbox" checked={opts.ops} onChange={e => setOpts({ ...opts, ops: e.target.checked })} />Health endpoints</label>}
         <select value={crKey ?? ''} onChange={e => { const v = e.target.value; if (v) setParams({ cr: v }); else setParams({}) }}
-          className={cx('rounded-lg border px-2 py-1.5 text-sm', crKey ? 'border-brand-500 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600')}>
+          className={cx('max-w-[260px] truncate rounded-lg border px-2 py-1.5 text-sm', crKey ? 'border-brand-500 bg-brand-50 text-brand-800' : 'border-slate-300 text-slate-600')}>
           <option value="">Show impact of a change request…</option>
           {crList.map(c => <option key={c.key} value={c.key}>{c.key}: {c.summary}</option>)}
         </select>
@@ -211,15 +214,15 @@ export default function DependencyMap() {
           <div className="flex items-center rounded-lg border border-slate-300 bg-white px-2">
             <Search size={14} className="text-slate-400" />
             <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && doSearch()} placeholder="Find a service, API, table…"
-              className="w-52 px-2 py-1.5 text-sm focus:outline-none" />
+              className="w-44 px-2 py-1.5 text-sm focus:outline-none" />
           </div>
-          <span className="text-xs text-slate-500">{counts.service} services · {counts.endpoint} APIs · {counts.table} tables · {counts.function} functions · {counts.edges} links</span>
+          <span className="hidden text-xs text-slate-500 2xl:inline">{counts.service} services · {counts.endpoint} APIs · {counts.table} tables · {counts.function} functions · {counts.edges} links</span>
         </div>
       </div>
 
       <div className="relative flex min-h-0 flex-1">
         <div className="relative min-w-0 flex-1 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:18px_18px]">
-          <div ref={box} className="absolute inset-0" />
+          <div ref={box} className={cx('absolute inset-y-0 right-0', view === 'journeys' ? 'left-[300px]' : 'left-0')} />
           {tip && (
             <div className="pointer-events-none absolute z-20 max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg"
               style={{ left: tip.x + 16, top: tip.y + 12 }}>

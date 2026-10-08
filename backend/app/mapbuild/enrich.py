@@ -130,9 +130,12 @@ def describe_tables(pm: ProjectMap, store: Store, mode: str, model: str | None) 
         return {"meta": meta}
     valid_t = {t.id for t in tables}
     unlabelled = {n.id for n in pm.of_type("column") if not n.props.get("classification")}
+    fix = lambda i, prefix: i if i in pm.nodes else f"{prefix}{i}"      # model sometimes drops the id prefix
+    tbl = {fix(x.get("id", ""), "table:"): x["summary"].strip() for x in resp.get("tables", [])}
+    sugg = [x | {"id": fix(x.get("id", ""), "col:")} for x in resp.get("column_suggestions", [])]
     return {"meta": meta,
-            "tables": {x["id"]: x["summary"].strip() for x in resp.get("tables", []) if x.get("id") in valid_t},
-            "suggestions": [x for x in resp.get("column_suggestions", []) if x.get("id") in unlabelled],
+            "tables": {k: v for k, v in tbl.items() if k in valid_t},
+            "suggestions": [x for x in sugg if x["id"] in unlabelled],
             "evidence_ids": check_citations(resp.get("evidence_ids", []), pack)[0] or list(pack)}
 
 
@@ -152,9 +155,11 @@ def narrate_journeys(pm: ProjectMap, journeys: list[dict], store: Store, mode: s
     by_id = {j["id"]: j for j in journeys}
     out = {}
     for x in resp.get("journeys", []):
-        j = by_id.get(x.get("id"))
-        if j and len(x.get("steps", [])) == len(j["steps"]):
-            out[j["id"]] = {"name": x["name"].strip(), "summary": x["summary"].strip(), "steps": x["steps"]}
+        jid = x.get("id", "")
+        j = by_id.get(jid) or by_id.get(f"journey:{jid}")
+        if j:      # step wording is used only if it matches the verified step count; names always come with it
+            out[j["id"]] = {"name": x["name"].strip(), "summary": x["summary"].strip(),
+                            "steps": x["steps"] if len(x.get("steps", [])) == len(j["steps"]) else None}
     return {"meta": meta, "journeys": out}
 
 
@@ -217,7 +222,7 @@ def apply_enrichment(pm: ProjectMap, report: dict, store: Store) -> None:
     for j in journeys:
         if j["id"] in names:
             j.update(name=names[j["id"]]["name"], summary=names[j["id"]]["summary"], narrated_by="ai")
-            for s, text in zip(j["steps"], names[j["id"]]["steps"]):
+            for s, text in zip(j["steps"], names[j["id"]]["steps"] or []):
                 s["text"] = text
     report["journeys"] = journeys
     report["enrichment"] = ({"status": "applied", "model": data.get("model"), "seconds": data.get("seconds"),

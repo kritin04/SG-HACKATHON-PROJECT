@@ -34,6 +34,11 @@ export default function ImpactMap({ map, analysis, height = 320, onSelect }: { m
     if (!box.current || !map || !analysis) return
     const { els, pos } = buildElements(map, 'system', { security: false, outside: true, ops: false })
     const v = verdictBySystemNode(analysis, map)
+    // keep only the impacted parts (plus the customer) so the small map stays readable
+    const keep = new Set(els.filter((el: any) => !el.data.source && (el.data.type === 'user' || (v[el.data.id] && v[el.data.id].verdict !== 'not_impacted'))).map((el: any) => el.data.id))
+    const shown = els.filter((el: any) => el.data.source ? keep.has(el.data.source) && keep.has(el.data.target) : keep.has(el.data.id))
+    els.length = 0
+    els.push(...shown)
     for (const el of els) {
       if (el.data.source) continue
       const verdict = v[el.data.id]?.verdict ?? 'not_impacted'

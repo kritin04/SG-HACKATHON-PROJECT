@@ -133,7 +133,7 @@ export default function ImpactPage() {
                   <h3 className="text-sm font-semibold text-slate-800">Impact on the system</h3>
                   <button onClick={() => nav(`/map?cr=${data.key}`)} className="text-xs font-medium text-brand-700">Open full map →</button>
                 </div>
-                {map ? <ImpactMap map={map} analysis={a} height={300} /> : <div className="p-4"><Spinner /></div>}
+                {map ? <ImpactMap map={map} analysis={a} height={340} /> : <div className="p-4"><Spinner /></div>}
                 <div className="flex flex-wrap gap-3 border-t border-slate-100 px-4 py-2.5 text-[11px] text-slate-600">
                   {Object.entries(VERDICT).map(([k, v]) => <span key={k} className="flex items-center gap-1"><span className={cx('h-2.5 w-2.5 rounded-sm', v.dot)} />{v.label}</span>)}
                 </div>
@@ -142,7 +142,7 @@ export default function ImpactPage() {
                 <h3 className="text-sm font-semibold text-slate-800">Why this risk level</h3>
                 <ul className="mt-2 space-y-1.5">{a.risk.reasons.map((r: string) => <li key={r} className="flex gap-2 text-xs text-slate-700"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />{r}</li>)}</ul>
                 {a.assessment.size && <p className="mt-3 text-xs text-slate-600"><b>Size {a.assessment.size}:</b> {a.assessment.size_reason}</p>}
-                <p className="mt-3 text-[11px] text-slate-400">Analysed {a.generated_at} at commit {a.sha.slice(0, 7)} · {a.model} · {Math.round(a.seconds)}s</p>
+                <p className="mt-3 text-[11px] text-slate-400">Analysed {a.generated_at} at commit {a.sha.slice(0, 7)} · {a.model ?? 'rules only (AI unavailable)'} · {Math.round(a.seconds)}s</p>
               </section>
             </aside>
           </div>
@@ -248,7 +248,7 @@ function TechnicalSection({ a, crKey, onChange }: { a: any; crKey: string; onCha
                       {i.service && <span className="text-xs text-slate-500">in {i.service}</span>}<span className="text-xs text-slate-400">{i.type === 'endpoint' ? 'API' : i.type}</span>
                       <SourceBadge by={i.by} />{i.ai_verdict && i.ai_verdict !== i.verdict && <span className="text-[11px] text-slate-400">(AI said: {VERDICT[i.ai_verdict]?.label})</span>}</div>
                     <p className="mt-0.5 text-sm text-slate-700">{i.how}</p>
-                    {i.why?.length > 0 && <p className="mt-0.5 text-xs text-slate-400">Found because: {i.why.join('; ')}</p>}
+                    {i.why?.length > 0 && i.why.join('; ') !== i.how && <p className="mt-0.5 text-xs text-slate-400">Found because: {i.why.join('; ')}</p>}
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <select value={i.verdict} onChange={e => update(i.id, 'override', e.target.value)} className="rounded border border-slate-200 bg-white px-1 py-0.5 text-xs text-slate-600" title="Change the verdict">

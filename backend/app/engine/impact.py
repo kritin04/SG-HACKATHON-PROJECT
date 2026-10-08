@@ -379,7 +379,8 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
     }
     result = {
         "key": key, "sha": pm.sha, "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "seconds": round(time.time() - t0, 1), "model": model or config.LIVE_MODEL,
+        "seconds": round(time.time() - t0, 1),
+        "model": next((m.get("model") for m in stages.values() if isinstance(m, dict) and m.get("model")), None),
         "cr": {"key": key, "summary": f["summary"], "description": f.get("description", ""),
                "acceptance_criteria": f.get("acceptance_criteria", []), "priority": f["priority"]["name"],
                "status": f["status"]["name"], "components": [c["name"] for c in f.get("components", [])],
