@@ -240,6 +240,19 @@ def analyze(state, key: str, mode: str = "auto", model: str | None = None, progr
                               and by_id.get(e.source, {}).get("verdict") in ("must_change", "likely_affected")})
             if callers and not any(c["service"] == i["label"] for c in contract):
                 contract.append({"api": f"{i['label']} API", "service": i["label"], "callers": callers})
+    # an outside system is only affected if data it reads actually CHANGES (a writer of that table changes,
+    # or the table gains fields). Read-only changes on our side cannot affect what it receives.
+    changed_tables = {d["id"] for d in data if d["new_fields"]}
+    for d in data:
+        if any(by_id.get(f"svc:{w}", {}).get("verdict") in ("must_change", "likely_affected") for w in d["writers"]):
+            changed_tables.add(d["id"])
+    for i in items:
+        if i["type"] != "external" or i["verdict"] == "not_impacted":
+            continue
+        reads = {e.target for e in pm.out_edges(i["id"], "consumes") if e.target.startswith("table:")}
+        if reads and not reads & changed_tables:
+            i.update(verdict="not_impacted", by="rules", ai_verdict=i["verdict"],
+                     how=f"Only reads {', '.join(pm.nodes[t].label for t in reads)}, which this change does not modify")
     externals = [i for i in items if i["type"] == "external" and i["verdict"] != "not_impacted"]
     for x in understanding["outside_systems"]:
         xid = labels[x.lower()]
