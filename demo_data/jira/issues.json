@@ -1,0 +1,110 @@
+[
+  {
+    "key": "BOA-101",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "High"},
+      "summary": "Daily limit: customers cannot send more than $5,000 per day",
+      "description": "To reduce fraud losses, a customer must not be able to send more than $5,000 in total in one calendar day. If a new payment would take them over the limit, the payment is refused and the customer sees a clear message. Deposits are not affected.",
+      "acceptance_criteria": ["A payment that takes the day's total above $5,000 is rejected", "The customer sees a clear error message on the website", "Deposits are not counted towards the limit"],
+      "components": [{"name": "Payments"}], "labels": ["fraud", "customer-facing"],
+      "reporter": {"displayName": "Anna Martin (Product Owner)"}, "assignee": {"displayName": "Ravi Iyer"},
+      "created": "2026-10-01T09:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-102",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Medium"},
+      "summary": "Show the payee's name in transaction history",
+      "description": "Customers find it hard to recognise past transactions because the history only shows account numbers. Where the other account is one of the customer's saved contacts, show the contact's name next to the transaction.",
+      "acceptance_criteria": ["History shows the contact name when the account is a saved contact", "Otherwise the account number is shown as today"],
+      "components": [{"name": "Website"}], "labels": ["customer-facing"],
+      "reporter": {"displayName": "Anna Martin (Product Owner)"}, "assignee": {"displayName": "Lena Novak"},
+      "created": "2026-10-01T10:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-103",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Medium"},
+      "summary": "Let customers delete a saved contact",
+      "description": "Customers can add payees (contacts) but cannot remove them. Add a way to delete a saved contact from the website.",
+      "acceptance_criteria": ["A customer can delete one of their own saved contacts", "A customer cannot delete another customer's contacts", "Deleted contacts no longer appear in the payment form"],
+      "components": [{"name": "Payees"}], "labels": ["customer-facing"],
+      "reporter": {"displayName": "Anna Martin (Product Owner)"}, "assignee": {"displayName": "Lena Novak"},
+      "created": "2026-10-02T09:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-104",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Low"},
+      "summary": "Block payments to your own account",
+      "description": "Some customers accidentally send money to their own account number. A payment where the sender and the recipient are the same account must be refused.",
+      "acceptance_criteria": ["Payment to own account is rejected with a clear message"],
+      "components": [{"name": "Payments"}], "labels": ["customer-facing"],
+      "reporter": {"displayName": "Omar Haddad (Business Analyst)"}, "assignee": {"displayName": "Ravi Iyer"},
+      "created": "2026-10-02T11:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-105",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "High"},
+      "summary": "Collect the customer's phone number at sign-up",
+      "description": "We need a mobile phone number for every new customer so we can contact them about suspicious activity. Add a required phone number field to the sign-up form and store it with the customer's profile.",
+      "acceptance_criteria": ["Sign-up form has a required phone number field", "The phone number is saved with the customer profile", "Existing customers are not forced to add one yet"],
+      "components": [{"name": "Accounts"}], "labels": ["personal-data", "customer-facing"],
+      "reporter": {"displayName": "Omar Haddad (Business Analyst)"}, "assignee": {"displayName": "Mei Tan"},
+      "created": "2026-10-03T09:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-106",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Low"},
+      "summary": "Download transaction history as a CSV file",
+      "description": "Customers want to download their transaction history to use in a spreadsheet. Add a Download button on the home page that gives a CSV file of the customer's transactions.",
+      "acceptance_criteria": ["Download button on the home page", "CSV contains date, other account, amount", "Only the customer's own transactions are included"],
+      "components": [{"name": "Website"}], "labels": ["customer-facing"],
+      "reporter": {"displayName": "Anna Martin (Product Owner)"}, "assignee": {"displayName": "Lena Novak"},
+      "created": "2026-10-03T14:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-107",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Medium"},
+      "summary": "Text the customer when their balance drops below $100",
+      "description": "Send the customer an SMS alert when a payment leaves their balance below $100, so they can top up before payments fail. Use the bank's SMS provider.",
+      "acceptance_criteria": ["SMS sent when balance goes below $100 after a payment", "Only one alert per day per customer"],
+      "components": [{"name": "Payments"}, {"name": "Notifications"}], "labels": ["customer-facing", "third-party"],
+      "reporter": {"displayName": "Anna Martin (Product Owner)"}, "assignee": {"displayName": "Ravi Iyer"},
+      "created": "2026-10-04T09:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-108",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Medium"},
+      "summary": "Make the balance show faster",
+      "description": "Customers complain the home page is slow. Make the balance appear faster.",
+      "acceptance_criteria": ["Home page feels faster"],
+      "components": [{"name": "Website"}], "labels": ["performance"],
+      "reporter": {"displayName": "Head of Digital"}, "assignee": {"displayName": "Unassigned"},
+      "created": "2026-10-05T09:00:00+00:00"
+    }
+  },
+  {
+    "key": "BOA-109",
+    "fields": {
+      "issuetype": {"name": "Change Request"}, "status": {"name": "To Do"}, "priority": {"name": "Low"},
+      "summary": "Minimum deposit of $10",
+      "description": "Very small deposits cost more to process than they are worth. Deposits below $10 must be refused with a clear message.",
+      "acceptance_criteria": ["A deposit below $10 is rejected", "Payments are not affected"],
+      "components": [{"name": "Payments"}], "labels": ["customer-facing"],
+      "reporter": {"displayName": "Omar Haddad (Business Analyst)"}, "assignee": {"displayName": "Ravi Iyer"},
+      "created": "2026-10-05T11:00:00+00:00"
+    }
+  }
+]

@@ -1,4 +1,0 @@
-{"number": 51, "title": "PAY-120: Send SMS when a transfer completes", "state": "merged", "jira_key": "PAY-120",
- "user": {"login": "sara.ong"}, "base": {"ref": "main", "rev": "pr-51-base"}, "head": {"ref": "feature/PAY-120-sms", "rev": "pr-51-head"},
- "reviews": [{"user": {"login": "priya.nair"}, "state": "APPROVED"}], "labels": [{"name": "notifications"}],
- "created_at": "2026-08-18T09:00:00+08:00", "merged_at": "2026-08-20T10:00:00+08:00"}

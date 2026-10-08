@@ -1,0 +1,42 @@
+# ANSWER KEY for the dependency map, hand-checked against the Bank of Anthos source (release v0.6.11).
+# Tests compare the automatically built map with this list to measure accuracy.
+
+services: [frontend, userservice, contacts, ledgerwriter, balancereader, transactionhistory]
+databases: [accounts-db, ledger-db]
+
+tables:
+  accounts-db: [users, contacts]
+  ledger-db: [transactions]
+
+# Level 2: which service calls which API of another service
+api_calls:
+  - {from: frontend, to: "ep:userservice:POST /users"}                       # sign-up
+  - {from: frontend, to: "ep:userservice:GET /login"}                        # login
+  - {from: frontend, to: "ep:contacts:GET /contacts/{username}"}             # home page payee list
+  - {from: frontend, to: "ep:contacts:POST /contacts/{username}"}            # save new payee
+  - {from: frontend, to: "ep:ledgerwriter:POST /transactions"}               # payment + deposit
+  - {from: frontend, to: "ep:balancereader:GET /balances/{accountId}"}       # home page balance
+  - {from: frontend, to: "ep:transactionhistory:GET /transactions/{accountId}"}  # home page history
+  - {from: ledgerwriter, to: "ep:balancereader:GET /balances/{accountId}"}   # enough money?
+
+# Level 2: which service reads / writes which table
+data_access:
+  - {service: userservice, table: accounts-db.users, mode: read_write}
+  - {service: contacts, table: accounts-db.contacts, mode: read_write}
+  - {service: ledgerwriter, table: ledger-db.transactions, mode: write}
+  - {service: balancereader, table: ledger-db.transactions, mode: read}
+  - {service: transactionhistory, table: ledger-db.transactions, mode: read}
+
+# Security: who issues login tokens and who trusts them
+token_issuer: userservice
+token_verifiers: [frontend, contacts, ledgerwriter, balancereader, transactionhistory]
+
+# Endpoints each service offers (business endpoints only; health endpoints excluded)
+endpoints:
+  frontend: ["GET /", "GET /home", "POST /payment", "POST /deposit", "GET /login", "POST /login",
+             "GET /consent", "POST /consent", "GET /signup", "POST /signup", "POST /logout"]
+  userservice: ["POST /users", "GET /login"]
+  contacts: ["GET /contacts/{username}", "POST /contacts/{username}"]
+  ledgerwriter: ["POST /transactions"]
+  balancereader: ["GET /balances/{accountId}"]
+  transactionhistory: ["GET /transactions/{accountId}"]

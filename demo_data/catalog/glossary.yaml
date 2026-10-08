@@ -1,29 +1,11 @@
-# Curated: business vocabulary -> code/data entities.
+# Business words -> parts of the system. Helps match plain-language Jira text to the map.
 terms:
-  - term: fee
-    synonyms: [fees, pricing, charge, charged]
-    entities: ["mod:payments_service.fees"]
-  - term: cross-border
-    synonyms: [overseas, international, foreign, destination country]
-    entities: ["mod:payments_service.fees", "mod:payments_service.transfers"]
-  - term: fx markup
-    synonyms: [fx, exchange rate, markup]
-    entities: ["mod:payments_service.fees"]
-  - term: fee quote
-    synonyms: [quote]
-    entities: ["route:GET /fees/quote"]
-  - term: ledger
-    synonyms: [ledger entries, posting, postings]
-    entities: ["mod:ledger_service.ledger", "table:ledger_entries"]
-  - term: regulatory reporting
-    synonyms: [regulatory extract, daily extract, regulator]
-    entities: ["mod:reporting.extract"]
-  - term: sms
-    synonyms: [notification text, text message]
-    entities: ["mod:notification_service.consumer", "mod:notification_service.sms"]
-  - term: daily limit
-    synonyms: [transfer limit]
-    entities: ["mod:payments_service.transfers"]
-  - term: customer profile
-    synonyms: [residency, personal details, phone number]
-    entities: ["mod:customer_service.profile"]
+  - {term: send money, synonyms: [payment, payments, transfer, pay, send], targets: ["ep:frontend:POST /payment", "svc:ledgerwriter"]}
+  - {term: deposit, synonyms: [deposits, top up, add money], targets: ["ep:frontend:POST /deposit", "svc:ledgerwriter"]}
+  - {term: balance, synonyms: [balances, available money], targets: ["svc:balancereader"]}
+  - {term: transaction history, synonyms: [history, statement, past transactions, transactions list], targets: ["svc:transactionhistory"]}
+  - {term: contact, synonyms: [contacts, payee, payees, recipient, saved account], targets: ["svc:contacts", "table:accounts-db.contacts"]}
+  - {term: sign up, synonyms: [signup, sign-up, register, registration, new account], targets: ["ep:frontend:POST /signup", "ep:userservice:POST /users"]}
+  - {term: login, synonyms: [log in, sign in, password], targets: ["ep:frontend:POST /login", "ep:userservice:GET /login"]}
+  - {term: customer profile, synonyms: [phone, phone number, address, personal details], targets: ["table:accounts-db.users"]}
+  - {term: limit, synonyms: [maximum, minimum, cap], targets: ["svc:ledgerwriter"]}

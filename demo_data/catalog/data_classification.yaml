@@ -1,11 +1,16 @@
-# Curated: data classification of table columns.
+# SYNTHETIC labels on REAL columns (the columns come from the real schema).
+# At a real bank this comes from the data classification register.
 columns:
-  customer_profile.full_name: PII
-  customer_profile.id_number: PII
-  customer_profile.phone: PII
-  customer_profile.residency_country: PII
-  transfers.amount: Financial
-  transfers.fee: Financial
-  ledger_entries.amount: Financial
-  ledger_entries.fee: Financial
-  ledger_entries.fx_markup: Financial
+  accounts-db.users.ssn: Personal (highly sensitive)
+  accounts-db.users.birthday: Personal
+  accounts-db.users.firstname: Personal
+  accounts-db.users.lastname: Personal
+  accounts-db.users.address: Personal
+  accounts-db.users.state: Personal
+  accounts-db.users.zip: Personal
+  accounts-db.users.passhash: Secret
+  accounts-db.contacts.account_num: Financial
+  accounts-db.contacts.routing_num: Financial
+  ledger-db.transactions.amount: Financial
+  ledger-db.transactions.from_acct: Financial
+  ledger-db.transactions.to_acct: Financial

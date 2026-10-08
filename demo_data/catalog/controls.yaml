@@ -1,35 +1,28 @@
-# Curated: change controls. Synthetic examples - not real regulatory requirements.
+# SYNTHETIC change controls: "if a change does X, then Y must happen". Not real regulation.
+# At a real bank these come from change-management and compliance policies.
 controls:
-  - id: CTRL-PRC-01
-    name: Pricing change approval
-    description: Any change to customer fees or pricing needs Payments Lead approval, tests, and updated fee documentation.
-    triggers:
-      paths: ["payments_service/fees.py"]
-      keywords: [fee, pricing]
-    required_evidence:
-      - {type: approver_role, role: payments-lead}
-      - {type: test_change}
-      - {type: doc_change, paths: ["docs/fees.md"]}
-  - id: CTRL-PRIV-01
+  - id: CTRL-PII
     name: Personal data change review
-    description: Changes that read or write personal data (PII) need Privacy Officer review.
-    triggers:
-      data_classes: [PII]
-    required_evidence:
-      - {type: approver_role, role: privacy-officer}
-  - id: CTRL-REG-01
+    when: The change touches a column labelled Personal or Secret
+    triggers: {data_classes: ["Personal", "Personal (highly sensitive)", "Secret"]}
+    requires: [Privacy Officer approval]
+  - id: CTRL-PAY
+    name: Payments logic change approval
+    when: The change alters how payments or deposits are validated or recorded
+    triggers: {services: [ledgerwriter]}
+    requires: [Payments Lead approval, Automated tests for the change]
+  - id: CTRL-API
+    name: API contract change sign-off
+    when: The change adds, removes or alters an API used by another service
+    triggers: {api_contract_change: true}
+    requires: [Sign-off from every consuming team]
+  - id: CTRL-REG
     name: Regulatory reporting impact review
-    description: Changes affecting data consumed by the Regulatory Reporting Hub need Reg Reporting Lead sign-off and extract tests.
-    triggers:
-      external_systems: [regulatory_reporting_hub]
-    required_evidence:
-      - {type: approver_role, role: regreport-lead}
-      - {type: test_change, paths: ["tests/test_reporting*"]}
-  - id: CTRL-FIN-01
-    name: Financial data integrity
-    description: Schema or logic changes to financial records need automated test evidence.
-    triggers:
-      data_classes: [Financial]
-      paths: ["migrations/**"]
-    required_evidence:
-      - {type: test_change}
+    when: The change affects data read by Regulatory Reporting
+    triggers: {external_systems: [regulatory_reporting]}
+    requires: [Regulatory Reporting team sign-off, Reconciliation test]
+  - id: CTRL-VENDOR
+    name: New third-party integration
+    when: The change starts sending data to an outside vendor
+    triggers: {external_systems: [sms_email_provider]}
+    requires: [Vendor risk assessment, Security review]

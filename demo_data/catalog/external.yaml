@@ -1,20 +1,34 @@
-# Curated: downstream systems that live outside this repository.
+# SYNTHETIC: systems OUTSIDE this codebase that depend on it. We cannot change them,
+# but a change can break them: notify the owner, test the interface, get sign-off.
+# At a real bank this comes from the interface catalogue / architecture repository.
 external_systems:
-  - id: regulatory_reporting_hub
-    name: Regulatory Reporting Hub
-    description: Receives the daily transaction and fee extract for regulatory submissions.
-    consumes: ["mod:reporting.extract", "table:ledger_entries"]
-    owners: ["@regreport-team"]
+  - id: regulatory_reporting
+    name: Regulatory Reporting
+    description: Builds the daily transaction report sent to the regulator.
+    consumes: ["table:ledger-db.transactions", "table:accounts-db.users"]
+    owner: Regulatory Reporting team
     criticality: high
-  - id: finance_gl
+  - id: finance_ledger
     name: Finance General Ledger
-    description: Books every ledger posting into the bank's general ledger.
-    consumes: ["topic:ledger.entry.posted"]
-    owners: ["@finance-systems"]
+    description: Books every customer transaction into the bank accounting ledger.
+    consumes: ["table:ledger-db.transactions"]
+    owner: Finance Systems team
     criticality: high
-  - id: customer_statements
-    name: Customer Statements
-    description: Monthly statements generated from the transfers table.
-    consumes: ["table:transfers"]
-    owners: ["@statements-team"]
+  - id: fraud_screening
+    name: Fraud Screening
+    description: Scores new transactions for fraud every few minutes.
+    consumes: ["table:ledger-db.transactions"]
+    owner: Financial Crime team
+    criticality: high
+  - id: crm
+    name: Customer Relationship Management (CRM)
+    description: Copies customer profiles every night for the call centre.
+    consumes: ["table:accounts-db.users"]
+    owner: Customer Operations team
+    criticality: medium
+  - id: sms_email_provider
+    name: SMS / Email Provider
+    description: Third-party service the bank can use to send messages to customers. Not connected yet.
+    consumes: []
+    owner: Vendor (managed by Digital Channels team)
     criticality: medium

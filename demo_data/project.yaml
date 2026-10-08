@@ -1,0 +1,17 @@
+# The project being analysed. Real open-source code, pinned so results are reproducible.
+name: Bank of Anthos
+description: Google's open-source sample bank (login, balances, payments, deposits, history).
+repo_url: https://github.com/GoogleCloudPlatform/bank-of-anthos.git
+pinned_sha: db35fea9fd090150e2398106aadb475576f80d94
+pinned_label: release/v0.6.11
+local_path: workspace/repos/bank-of-anthos
+manifests_dir: kubernetes-manifests
+source_dir: src
+exclude:              # not part of the product we analyse
+  - src/loadgenerator     # traffic simulator
+  - src/ledgermonolith    # alternative all-in-one deployment
+ops_endpoints:        # health/status endpoints, hidden by default on the map
+  - /version
+  - /ready
+  - /healthy
+  - /whereami

@@ -1,0 +1,11 @@
+# SYNTHETIC: owners, business capability and criticality (Bank of Anthos has no real teams).
+# At a real bank this comes from the application inventory / CMDB / CODEOWNERS.
+services:
+  frontend:           {owner: Digital Channels team, capability: Customer website, criticality: high}
+  userservice:        {owner: Identity team,         capability: Login and Sign-up, criticality: high}
+  contacts:           {owner: Payments team,         capability: Payees,            criticality: medium}
+  ledgerwriter:       {owner: Payments team,         capability: Payments,          criticality: high}
+  balancereader:      {owner: Core Ledger team,      capability: Balances,          criticality: high}
+  transactionhistory: {owner: Core Ledger team,      capability: History,           criticality: medium}
+  accounts-db:        {owner: Identity team,         capability: Login and Sign-up, criticality: high}
+  ledger-db:          {owner: Core Ledger team,      capability: Payments,          criticality: high}
