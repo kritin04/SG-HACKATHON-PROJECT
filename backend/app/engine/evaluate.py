@@ -8,6 +8,13 @@ from .. import config
 
 def evaluate(analyses: dict[str, dict]) -> dict:
     truth = yaml.safe_load((config.DEMO_DATA / "ground_truth.yaml").read_text(encoding="utf-8"))
+    # issues re-created in a real Jira get new keys: translate them back to the answer-key keys
+    import json
+    kmap = config.WORKSPACE / "jira_key_map.json"
+    if kmap.exists():
+        for new, old in json.loads(kmap.read_text(encoding="utf-8")).items():
+            if new in analyses and old not in analyses:
+                analyses = analyses | {old: analyses[new]}
     per, tot = {}, {"must_hit": 0, "must_total": 0, "aff_hit": 0, "aff_total": 0, "false_must": 0,
                     "ctrl_hit": 0, "ctrl_total": 0, "ext_hit": 0, "ext_total": 0}
     for key, t in truth.items():
