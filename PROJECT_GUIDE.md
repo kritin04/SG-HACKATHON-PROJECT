@@ -346,7 +346,22 @@ Run `cd backend; .venv\Scripts\python -m pytest -q`:
 | Token trust | 5 | 5 | 5 | 0 |
 | **Overall** | **49** | **48 (98%)** | **49 (100%)** | **0** |
 
-**Impact accuracy (AI analyses vs the answer key):** *see the latest results in section 12 (filled in after pre-computing the 9 CRs).*
+**Impact accuracy** (qwen2.5:7b analyses of all 9 CRs vs `ground_truth.yaml`, via `GET /api/eval`):
+
+| Measure | Result | Meaning |
+|---|---|---|
+| Involved parts found (must change or likely affected) | **100%** | Nothing that should be on the radar was missed |
+| Approval rules that should fire | **100%** | |
+| Outside systems that should be flagged | **100%** | |
+| Wrongly marked "must change" (from the "not" lists) | **0** | |
+| "Must change" placed on the right part | **78%** | In BOA-102 and BOA-106 the AI put the main change in `transactionhistory`, where the key expects `frontend`. Both designs are possible, and one click fixes it |
+| Vague request raises questions (BOA-108) | ✅ | "How much faster should the home page be?", "What is the current performance baseline?" … |
+
+**Known weakness: over-caution.** The model tends to over-include. Examples: it marks the `transactions` table "must change" when it's only read (BOA-101, BOA-104), and it flags outside systems or extra approvals for small payment-validation changes (BOA-104, BOA-109 come out "High"). Two rules already reduce this:
+1. outside systems only count when data they read actually changes;
+2. personal-data rules only fire for tables that actually change.
+
+A stricter judging prompt would reduce it further, but costs a ~1.5 h re-run on this CPU.
 
 ## 11. Limits and adapting to a real bank
 - **Languages:** Python and Java are supported now. Others need an extractor that produces the same `ServiceFacts` (tree-sitter has grammars for most languages).
@@ -371,3 +386,4 @@ Run `cd backend; .venv\Scripts\python -m pytest -q`:
 | Chunk 7: Impact pipeline | 6 stages, evidence-checked AI, rule fallbacks, risk points, API contract detection, tests/gaps, people, cards; background jobs with live progress |
 | Chunk 8-9: Board + Impact page | Jira-like board, new CR dialog, impact report (summary first), reviewer edits and add to scope, mini impact map |
 | Chunk 10: Overlay | CR impact overlay on the full map |
+| Chunk 11: Precompute + tuning | All 9 CRs analysed with 7B (~10 min each). Rules tuned: outside systems only when their data changes; data rules only for changing tables (AI), cautious for rule fallback; board shows jobs from any process. **Scores: 100% involved parts, 100% approvals, 100% outside systems, 0 wrong "must change"** |
