@@ -230,7 +230,7 @@ export default function DependencyMap() {
               {tip.body && <div className="mt-1 leading-5 text-slate-600">{tip.body}</div>}
             </div>
           )}
-          <Legend view={view} />
+          {view !== 'journeys' && <Legend view={view} />}
           {overlay && (
             <div className="absolute right-4 top-4 z-10 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs shadow-sm">
               <div className="mb-1 font-semibold text-slate-800">{overlay.key} impact</div>
@@ -317,7 +317,7 @@ function JourneyList({ journeys, selected, onSelect }: { journeys: any[]; select
               </li>
             ))}
           </ol>
-          {selected.narrated_by === 'ai' && <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-400"><Sparkles size={11} />Wording by local AI; steps computed from verified code links.</div>}
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-400"><Sparkles size={11} />Steps computed from verified code links{selected.narrated_by === 'ai' ? '; name and summary by local AI' : ''}.</div>
         </div>
       )}
     </div>

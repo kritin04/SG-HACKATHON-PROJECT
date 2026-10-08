@@ -197,6 +197,19 @@ def _apply_resolved(pm: ProjectMap, resolved: list[dict]) -> None:
             e.origin = "ai"
 
 
+def _step_text(pm: ProjectMap, s: dict) -> str:
+    frm, to = pm.nodes[s["from"]], pm.nodes[s["to"]]
+    if s["kind"] == "user":
+        return f"The customer uses {s['detail']} on the website ({to.label})"
+    if s["kind"] == "api":
+        e = pm.edges.get(s["edge"])
+        why = (e.props.get("business_label") if e else None) or ""
+        return f"{frm.label} calls {to.label} {s['detail']}" + (f": {why[0].lower() + why[1:]}" if why else "")
+    verb = "saves to" if s["kind"] == "writes" else "reads from"
+    bg = " (through a cache it keeps up to date in the background)" if s.get("background") else ""
+    return f"{frm.label} {verb} the {to.label} table{bg}"
+
+
 def apply_enrichment(pm: ProjectMap, report: dict, store: Store) -> None:
     """Apply cached enrichment (if any) to a freshly built map. Never calls the model."""
     data = store.get(_key(pm))
@@ -222,8 +235,9 @@ def apply_enrichment(pm: ProjectMap, report: dict, store: Store) -> None:
     for j in journeys:
         if j["id"] in names:
             j.update(name=names[j["id"]]["name"], summary=names[j["id"]]["summary"], narrated_by="ai")
-            for s, text in zip(j["steps"], names[j["id"]]["steps"] or []):
-                s["text"] = text
+    for j in journeys:          # step sentences come from the verified links themselves (always correct)
+        for s in j["steps"]:
+            s["text"] = _step_text(pm, s)
     report["journeys"] = journeys
     report["enrichment"] = ({"status": "applied", "model": data.get("model"), "seconds": data.get("seconds"),
                              "resolved": [{k: r.get(k) for k in ("service", "function", "decision", "category",

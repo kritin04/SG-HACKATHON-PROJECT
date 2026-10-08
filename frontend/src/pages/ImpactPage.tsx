@@ -142,7 +142,7 @@ export default function ImpactPage() {
                 <h3 className="text-sm font-semibold text-slate-800">Why this risk level</h3>
                 <ul className="mt-2 space-y-1.5">{a.risk.reasons.map((r: string) => <li key={r} className="flex gap-2 text-xs text-slate-700"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />{r}</li>)}</ul>
                 {a.assessment.size && <p className="mt-3 text-xs text-slate-600"><b>Size {a.assessment.size}:</b> {a.assessment.size_reason}</p>}
-                <p className="mt-3 text-[11px] text-slate-400">Analysed {a.generated_at} at commit {a.sha.slice(0, 7)} · {a.model ?? 'rules only (AI unavailable)'} · {Math.round(a.seconds)}s</p>
+                <p className="mt-3 text-[11px] text-slate-400">Analysed {a.generated_at} at commit {a.sha.slice(0, 7)} · {a.model ?? 'rules only (AI unavailable)'}{a.ai_seconds ? ` · local AI time ${Math.round(a.ai_seconds / 60)} min` : ''}</p>
               </section>
             </aside>
           </div>

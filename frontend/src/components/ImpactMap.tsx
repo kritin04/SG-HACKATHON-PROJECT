@@ -32,7 +32,7 @@ export default function ImpactMap({ map, analysis, height = 320, onSelect }: { m
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!box.current || !map || !analysis) return
-    const { els, pos } = buildElements(map, 'system', { security: false, outside: true, ops: false })
+    const { els } = buildElements(map, 'system', { security: false, outside: true, ops: false })
     const v = verdictBySystemNode(analysis, map)
     // keep only the impacted parts (plus the customer) so the small map stays readable
     const keep = new Set(els.filter((el: any) => !el.data.source && (el.data.type === 'user' || (v[el.data.id] && v[el.data.id].verdict !== 'not_impacted'))).map((el: any) => el.data.id))
@@ -41,15 +41,17 @@ export default function ImpactMap({ map, analysis, height = 320, onSelect }: { m
     els.push(...shown)
     for (const el of els) {
       if (el.data.source) continue
+      el.data.short = String(el.data.label).split(String.fromCharCode(10))[0]
       const verdict = v[el.data.id]?.verdict ?? 'not_impacted'
       el.classes = `${el.classes} v-${el.data.type === 'user' ? 'none' : verdict}`
     }
     const cy = cytoscape({
       container: box.current, elements: els, userZoomingEnabled: true, boxSelectionEnabled: false,
-      layout: { name: 'preset', positions: (n: any) => pos[n.id()], fit: true, padding: 16 } as any,
+      layout: { name: 'breadthfirst', directed: false, roots: ['user:customer'], spacingFactor: 0.95, fit: true, padding: 10,
+        avoidOverlap: true } as any,
       style: [
-        { selector: 'node', style: { label: 'data(label)', 'font-size': 12, 'text-wrap': 'wrap', 'text-max-width': '150px', 'text-valign': 'center',
-          'text-halign': 'center', 'background-color': '#fff', 'border-width': 1, 'border-color': '#cbd5e1', shape: 'round-rectangle', width: 160, height: 46, color: '#334155' } },
+        { selector: 'node', style: { label: 'data(short)', 'font-size': 22, 'font-weight': 600, 'text-wrap': 'wrap', 'text-max-width': '200px', 'text-valign': 'center',
+          'text-halign': 'center', 'background-color': '#fff', 'border-width': 1, 'border-color': '#cbd5e1', shape: 'round-rectangle', width: 210, height: 60, color: '#334155' } },
         { selector: 'node.database', style: { shape: 'barrel' } },
         { selector: 'node.external', style: { shape: 'cut-rectangle', 'border-style': 'dashed', width: 180 } },
         { selector: 'node.user', style: { shape: 'ellipse', width: 110 } },
