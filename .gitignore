@@ -1,9 +1,37 @@
-.venv/
-__pycache__/
-*.pyc
-node_modules/
-dist/
+# --- secrets: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+*credentials*.json
+*secret*.json
+*.token
+
+# --- generated data (cloned repo, database, caches, Jira copies) ---
 workspace/
 *.db
-.env
+*.sqlite
+*.sqlite3
+*.npy
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
 .pytest_cache/
+
+# --- frontend ---
+node_modules/
+dist/
+
+# --- editor / OS / logs ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
